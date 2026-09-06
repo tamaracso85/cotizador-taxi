@@ -101,17 +101,22 @@ async function cotizar(){
     let fare;
 
     if(airport){fare=Math.max(300,Math.round(km*20/10)*10);}
-    else if(km<=4)fare=80;
-    else if(km<=7)fare=100;
-    else if(km<=10)fare=120;
+    else if(km<=3)fare=70;
+    else if(km<=5)fare=80;
+    else if(km<=7)fare=90;
+    else if(km<=9)fare=110;
+    else if(km<=11)fare=120;
     else if(km<=13)fare=140;
-    else if(km<=16)fare=160;
-    else if(km<=20)fare=190;
-    else if(km<=23)fare=220;
-    else if(km<=26)fare=250;
-    else if(km<=30)fare=280;
-    else if(km<=35)fare=320;
-    else fare=360;
+    else if(km<=15)fare=160;
+    else if(km<=18)fare=200;
+    else if(km<=21)fare=240;
+    else if(km<=24)fare=280;
+    else if(km<=27)fare=320;
+    else if(km<=30)fare=380;
+    else if(km<=35)fare=450;
+    else if(km<=40)fare=520;
+    else if(km<=45)fare=600;
+    else fare=700;
 
     r.innerHTML=`<b>Destino:</b> ${g.nombre || destino}<br><b>Distancia:</b> ${km.toFixed(1)} km<br><b>Tarifa estimada:</b> $${fare} MXN${airport?"<br><span class='small'>Aeropuerto: tarifa especial provisional</span>":""}`;
   }catch(e){
