@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cotizador Taxi Acapulco</title>
+<style>
+body{font-family:Arial;margin:0;background:#f3f4f6;color:#222}.card{max-width:520px;margin:30px auto;padding:24px;background:#fff;border-radius:18px;box-shadow:0 4px 18px #0002}
+h1{text-align:center}.btn{width:100%;padding:14px;margin:8px 0;border:0;border-radius:10px;background:#0b6efd;color:#fff;font-size:16px;cursor:pointer}
+input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #bbb;border-radius:10px;font-size:16px;margin:8px 0 12px}
+#resultado,#estadoServicio{margin-top:12px;padding:15px;border-radius:10px}#resultado{background:#f1f5f9}.whatsapp{background:#198754}.small{font-size:13px;color:#666}
+.estado-activo{background:#dcfce7;color:#166534}.estado-inactivo{background:#fee2e2;color:#991b1b}.estado-respaldo{background:#fef3c7;color:#92400e}
+</style></head>
+<body><div class="card">
+<h1>🚕 Cotizador de Taxi</h1><p>Acapulco, Guerrero</p>
+<div id="estadoServicio" class="estado-activo">🟢 Servicio disponible</div>
+<button class="btn" onclick="obtenerUbicacion()">📍 Usar mi ubicación</button>
+<div id="ubicacion" class="small">Aún no se ha obtenido tu ubicación.</div>
+<label>¿A dónde quieres ir?</label>
+<input id="destino" placeholder="Ej. Zócalo de Acapulco">
+<button id="btnCotizar" class="btn" onclick="cotizar()">💰 Calcular tarifa</button>
+<div id="resultado">Ingresa tu destino para calcular.</div>
+<a id="wa" href="https://wa.me/527444490147" target="_blank" style="text-decoration:none;pointer-events:none">
+<button id="btnWhatsApp" class="btn whatsapp" disabled>📲 Solicitar taxi</button></a>
+</div>
+<script>
+let pos=null,servicioActivo=true;
+const SUPABASE_URL="https://denzagpozepvrdyyzztxg.supabase.co";
+const SUPABASE_KEY="sb_publishable_P24mV2x-_JXHhkAa2kUbSQ_RSreYQhw";
+
+async function verificarServicio(){
+ const e=document.getElementById("estadoServicio"),b=document.getElementById("btnCotizar");
+ try{
+  if(!window.supabase)throw Error("Supabase no disponible");
+  const s=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const {data,error}=await s.from("estado_servicio").select("servicio_activo").eq("id",1).single();
+  if(error)throw error;
+  servicioActivo=data.servicio_activo===true;
+  if(servicioActivo){e.className="estado-activo";e.textContent="🟢 Servicio disponible";b.disabled=false}
+  else{e.className="estado-inactivo";e.textContent="🔴 Servicio no disponible en este momento";b.disabled=true;document.getElementById("resultado").textContent="El servicio no está disponible en este momento."}
+ }catch(x){
+  servicioActivo=true;b.disabled=false;e.className="estado-respaldo";e.textContent="🟡 Servicio disponible";
+  console.warn("Supabase no respondió; modo respaldo.",x);
+ }
+}
+verificarServicio();
+
+function obtenerUbicacion(){
+ if(!navigator.geolocation){alert("Tu navegador no permite obtener la ubicación.");return}
+ navigator.geolocation.getCurrentPosition(p=>{
+  pos={lat:p.coords.latitude,lon:p.coords.longitude};
+  document.getElementById("ubicacion").textContent="✅ Ubicación obtenida correctamente.";
+ },()=>alert("No se pudo obtener la ubicación. Activa el permiso de ubicación del navegador."),
+ {enableHighAccuracy:true,timeout:30000,maximumAge:0});
+}
+
+const destinos={
+"la gran plaza":{lat:16.861473,lon:-99.881912,nombre:"La Gran Plaza Acapulco"},
+"gran plaza":{lat:16.861473,lon:-99.881912,nombre:"La Gran Plaza Acapulco"},
+"hotel ritz":{lat:16.8506,lon:-99.9069,nombre:"Hotel Ritz Acapulco"},
+"zocalo":{lat:16.8493,lon:-99.9081,nombre:"Zócalo de Acapulco"},
+"zócalo":{lat:16.8493,lon:-99.9081,nombre:"Zócalo de Acapulco"},
+"caleta":{lat:16.8336,lon:-99.9115,nombre:"Caleta, Acapulco"},
+"la quebrada":{lat:16.8375,lon:-99.9126,nombre:"La Quebrada, Acapulco"},
+"aeropuerto":{lat:16.7571,lon:-99.7537,nombre:"Aeropuerto Internacional de Acapulco"}};
+
+function norm(t){return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim()}
+async function buscarDestino(d){
+ const c=norm(d);
+ for(const k of Object.keys(destinos))if(c===norm(k)||c.includes(norm(k)))return destinos[k];
+ for(const q of [`${d}, Acapulco, Guerrero, México`,`${d}, Acapulco de Juárez, Guerrero, México`,`${d}, Acapulco`]){
+  const r=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=mx&accept-language=es&q="+encodeURIComponent(q));
+  if(!r.ok)continue;const a=await r.json();
+  if(a.length){const z=a.find(x=>/Acapulco|Guerrero/i.test(x.display_name||""))||a[0];return{lat:+z.lat,lon:+z.lon,nombre:z.display_name}}
+ }return null
+}
+function tarifa(km){
+ if(km<=3)return 70;if(km<=5)return 80;if(km<=7)return 100;if(km<=9)return 120;if(km<=11)return 130;
+ if(km<=13)return 150;if(km<=15)return 170;if(km<=18)return 200;if(km<=21)return 240;if(km<=24)return 280;
+ if(km<=27)return 320;if(km<=30)return 380;if(km<=35)return 450;if(km<=40)return 520;if(km<=45)return 600;return 700;
+}
+async function cotizar(){
+ const d=document.getElementById("destino").value.trim(),r=document.getElementById("resultado");
+ if(!pos){alert("Primero pulsa «Usar mi ubicación».");return}if(!d){alert("Escribe tu destino.");return}
+ if(!servicioActivo){alert("El servicio no está disponible en este momento.");return}
+ r.textContent="Buscando destino...";
+ try{
+  const g=await buscarDestino(d);if(!g)throw Error("Destino no encontrado");r.textContent="Calculando ruta...";
+  const j=await fetch(`https://router.project-osrm.org/route/v1/driving/${pos.lon},${pos.lat};${g.lon},${g.lat}?overview=false`).then(x=>x.json());
+  if(!j.routes?.length)throw Error("Ruta no encontrada");const km=j.routes[0].distance/1000;
+  const airport=/aeropuerto|acapulco international|ACA\b/i.test(d);
+  const fare=airport?Math.max(300,Math.round(km*20/10)*10):tarifa(km);
+  const nombre=g.nombre||d,mapas=`https://www.google.com/maps?q=${pos.lat},${pos.lon}`;
+  const msg=`🚕 Solicitud de taxi\n\n📍 Mi ubicación: ${pos.lat.toFixed(6)}, ${pos.lon.toFixed(6)}\n🗺️ Ubicación en Google Maps: ${mapas}\n🎯 Destino: ${nombre}\n📏 Distancia: ${km.toFixed(1)} km\n💰 Tarifa estimada: $${fare} MXN`;
+  document.getElementById("wa").href="https://wa.me/527444490147?text="+encodeURIComponent(msg);
+  document.getElementById("btnWhatsApp").disabled=false;document.getElementById("wa").style.pointerEvents="auto";
+  r.innerHTML=`<b>Destino:</b> ${nombre}<br><b>Distancia:</b> ${km.toFixed(1)} km<br><b>Tarifa estimada:</b> $${fare} MXN`+(airport?"<br><span class='small'>Aeropuerto: tarifa especial provisional</span>":"");
+ }catch(x){console.error(x);r.textContent="No encontramos ese destino. Prueba con el nombre del lugar y agrega «Acapulco»."}
+}
+</script></body></html>
