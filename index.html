@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mi Taxi - Cotizador</title>
+<style>
+body{font-family:Arial;margin:0;background:#f3f4f6;color:#111827}main{max-width:520px;margin:auto;padding:20px}
+.card{background:#fff;border-radius:20px;padding:22px;box-shadow:0 8px 30px #0001}h1{margin:0 0 6px}
+.sub,.small{color:#6b7280}.sub{margin-bottom:20px}label{display:block;font-weight:bold;margin-top:12px}
+input,button{width:100%;box-sizing:border-box;padding:14px;border-radius:12px;font-size:16px;margin-top:8px}
+input{border:1px solid #d1d5db}button{border:0;background:#111827;color:#fff;font-weight:bold}
+.result{display:none;margin-top:18px;background:#f9fafb;border-radius:16px;padding:18px;text-align:center}.price{font-size:38px;font-weight:900;margin:6px}
+</style></head>
+<body><main><div class="card">
+<h1>🚕 Mi Taxi</h1><div class="sub">Cotiza tu viaje antes de abordar</div>
+<button id="locate">📍 Usar mi ubicación</button><div id="status" class="small">Activa la ubicación para calcular la ruta.</div>
+<label>¿A dónde vas?</label><input id="dest" placeholder="Ej. Hotel Ritz, Acapulco">
+<button id="quote">💰 Cotizar viaje</button>
+<div id="result" class="result"><div>Tarifa estimada</div><div id="price" class="price">$80</div>
+<div id="km" class="small"></div><div id="kind" class="small"></div>
+<button id="wa">📲 Me parece bien, hablar con el taxista</button></div>
+</div></main>
+<script>
+const PHONE="527444490147"; let origin=null;
+locate.onclick=()=>navigator.geolocation?.getCurrentPosition(p=>{origin={lat:p.coords.latitude,lon:p.coords.longitude};status.textContent="✓ Ubicación obtenida";},()=>status.textContent="No se pudo obtener la ubicación.");
+async function geo(q){let r=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=mx&q="+encodeURIComponent(q+", Acapulco, Guerrero, México"));let a=await r.json();if(!a.length)throw Error("No encontramos ese destino.");return{lat:+a[0].lat,lon:+a[0].lon};}
+async function route(a,b){let r=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`);let j=await r.json();if(j.code!="Ok")throw Error("No se pudo calcular la ruta.");return j.routes[0].distance/1000;}
+function fare(k){if(k<=4)return 80;if(k<=7)return 100;if(k<=10)return 120;if(k<=13)return 140;if(k<=16)return 160;if(k<=20)return 190;if(k<=23)return 220;if(k<=26)return 250;if(k<=30)return 280;if(k<=35)return 320;return Math.ceil((80+(k-4)*10)/10)*10;}
+quote.onclick=async()=>{try{if(!origin)return alert("Primero toca «Usar mi ubicación».");let q=dest.value.trim();if(!q)return;quote.disabled=true;quote.textContent="Calculando…";let d=await geo(q),k=await route(origin,d),f=fare(k);if(/aeropuerto|juan n.? álvarez/i.test(q)){f=Math.max(f,300);kind.textContent="Aeropuerto · tarifa especial por zona (por definir)";}else kind.textContent="Servicio normal";price.textContent="$"+f.toLocaleString("es-MX");km.textContent="Distancia por carretera: "+k.toFixed(1)+" km";result.style.display="block";wa.onclick=()=>location.href="https://wa.me/"+PHONE+"?text="+encodeURIComponent("Hola, quiero un taxi. Destino: "+q+". Tarifa estimada: $"+f+".");}catch(e){alert(e.message)}finally{quote.disabled=false;quote.textContent="💰 Cotizar viaje"}};
+</script></body></html>
