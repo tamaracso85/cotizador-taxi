@@ -1,28 +1,123 @@
-<!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mi Taxi - Cotizador</title>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizador Taxi Acapulco</title>
 <style>
-body{font-family:Arial;margin:0;background:#f3f4f6;color:#111827}main{max-width:520px;margin:auto;padding:20px}
-.card{background:#fff;border-radius:20px;padding:22px;box-shadow:0 8px 30px #0001}h1{margin:0 0 6px}
-.sub,.small{color:#6b7280}.sub{margin-bottom:20px}label{display:block;font-weight:bold;margin-top:12px}
-input,button{width:100%;box-sizing:border-box;padding:14px;border-radius:12px;font-size:16px;margin-top:8px}
-input{border:1px solid #d1d5db}button{border:0;background:#111827;color:#fff;font-weight:bold}
-.result{display:none;margin-top:18px;background:#f9fafb;border-radius:16px;padding:18px;text-align:center}.price{font-size:38px;font-weight:900;margin:6px}
-</style></head>
-<body><main><div class="card">
-<h1>🚕 Mi Taxi</h1><div class="sub">Cotiza tu viaje antes de abordar</div>
-<button id="locate">📍 Usar mi ubicación</button><div id="status" class="small">Activa la ubicación para calcular la ruta.</div>
-<label>¿A dónde vas?</label><input id="dest" placeholder="Ej. Hotel Ritz, Acapulco">
-<button id="quote">💰 Cotizar viaje</button>
-<div id="result" class="result"><div>Tarifa estimada</div><div id="price" class="price">$80</div>
-<div id="km" class="small"></div><div id="kind" class="small"></div>
-<button id="wa">📲 Me parece bien, hablar con el taxista</button></div>
-</div></main>
+body{font-family:Arial,sans-serif;margin:0;background:#f3f4f6;color:#222}
+.card{max-width:520px;margin:30px auto;padding:24px;background:white;border-radius:18px;box-shadow:0 4px 18px #0002}
+h1{margin-top:0;text-align:center}.btn{width:100%;padding:14px;margin:8px 0;border:0;border-radius:10px;background:#0b6efd;color:white;font-size:16px;cursor:pointer}
+input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #bbb;border-radius:10px;font-size:16px;margin:8px 0 12px}
+#resultado{margin-top:18px;padding:15px;border-radius:10px;background:#f1f5f9}
+.whatsapp{background:#198754}
+.small{font-size:13px;color:#666}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>🚕 Cotizador de Taxi</h1>
+<p>Acapulco, Guerrero</p>
+<button class="btn" onclick="obtenerUbicacion()">📍 Usar mi ubicación</button>
+<div id="ubicacion" class="small">Aún no se ha obtenido tu ubicación.</div>
+<label>¿A dónde quieres ir?</label>
+<input id="destino" placeholder="Ej. Zócalo de Acapulco">
+<button class="btn" onclick="cotizar()">💰 Calcular tarifa</button>
+<div id="resultado">Ingresa tu destino para calcular.</div>
+<a id="wa" href="https://wa.me/527444490147" target="_blank" style="text-decoration:none">
+<button class="btn whatsapp">📲 Contactar por WhatsApp</button>
+</a>
+</div>
 <script>
-const PHONE="527444490147"; let origin=null;
-locate.onclick=()=>navigator.geolocation?.getCurrentPosition(p=>{origin={lat:p.coords.latitude,lon:p.coords.longitude};status.textContent="✓ Ubicación obtenida";},()=>status.textContent="No se pudo obtener la ubicación.");
-async function geo(q){let r=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=mx&q="+encodeURIComponent(q+", Acapulco, Guerrero, México"));let a=await r.json();if(!a.length)throw Error("No encontramos ese destino.");return{lat:+a[0].lat,lon:+a[0].lon};}
-async function route(a,b){let r=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`);let j=await r.json();if(j.code!="Ok")throw Error("No se pudo calcular la ruta.");return j.routes[0].distance/1000;}
-function fare(k){if(k<=4)return 80;if(k<=7)return 100;if(k<=10)return 120;if(k<=13)return 140;if(k<=16)return 160;if(k<=20)return 190;if(k<=23)return 220;if(k<=26)return 250;if(k<=30)return 280;if(k<=35)return 320;return Math.ceil((80+(k-4)*10)/10)*10;}
-quote.onclick=async()=>{try{if(!origin)return alert("Primero toca «Usar mi ubicación».");let q=dest.value.trim();if(!q)return;quote.disabled=true;quote.textContent="Calculando…";let d=await geo(q),k=await route(origin,d),f=fare(k);if(/aeropuerto|juan n.? álvarez/i.test(q)){f=Math.max(f,300);kind.textContent="Aeropuerto · tarifa especial por zona (por definir)";}else kind.textContent="Servicio normal";price.textContent="$"+f.toLocaleString("es-MX");km.textContent="Distancia por carretera: "+k.toFixed(1)+" km";result.style.display="block";wa.onclick=()=>location.href="https://wa.me/"+PHONE+"?text="+encodeURIComponent("Hola, quiero un taxi. Destino: "+q+". Tarifa estimada: $"+f+".");}catch(e){alert(e.message)}finally{quote.disabled=false;quote.textContent="💰 Cotizar viaje"}};
-</script></body></html>
+let pos=null;
+function obtenerUbicacion(){
+ if(!navigator.geolocation){alert("Tu navegador no permite obtener la ubicación.");return;}
+ navigator.geolocation.getCurrentPosition(
+ p=>{pos={lat:p.coords.latitude,lon:p.coords.longitude};
+ document.getElementById("ubicacion").textContent="✅ Ubicación obtenida correctamente.";},
+ e=>alert("No se pudo obtener la ubicación. Activa el permiso de ubicación del navegador."),
+ {enableHighAccuracy:true,timeout:30000,maximumAge:0});
+}
+const destinosConocidos = {
+  "la gran plaza": {lat:16.861473, lon:-99.881912, nombre:"La Gran Plaza Acapulco"},
+  "gran plaza": {lat:16.861473, lon:-99.881912, nombre:"La Gran Plaza Acapulco"},
+  "hotel ritz": {lat:16.8506, lon:-99.9069, nombre:"Hotel Ritz Acapulco"},
+  "zocalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
+  "zócalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
+  "aeropuerto": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"}
+};
+
+function normalizarTexto(t){
+  return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
+}
+
+async function buscarDestino(destino){
+  const clave=normalizarTexto(destino);
+  for(const k of Object.keys(destinosConocidos)){
+    if(clave===normalizarTexto(k) || clave.includes(normalizarTexto(k))){
+      return destinosConocidos[k];
+    }
+  }
+
+  const consultas=[
+    `${destino}, Acapulco, Guerrero, México`,
+    `${destino}, Acapulco de Juárez, Guerrero, México`,
+    `${destino}, Acapulco, Gro., México`,
+    `${destino}, Acapulco`
+  ];
+
+  for(const q of consultas){
+    const url="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=mx&accept-language=es&q="+encodeURIComponent(q);
+    const respuesta=await fetch(url);
+    if(!respuesta.ok) continue;
+    const resultados=await respuesta.json();
+    if(resultados.length){
+      const mejor=resultados.find(x => /Acapulco|Guerrero/i.test(x.display_name || "")) || resultados[0];
+      return {lat:Number(mejor.lat), lon:Number(mejor.lon), nombre:mejor.display_name};
+    }
+  }
+  return null;
+}
+
+async function cotizar(){
+  const destino=document.getElementById("destino").value.trim();
+  if(!pos){alert("Primero pulsa «Usar mi ubicación».");return;}
+  if(!destino){alert("Escribe tu destino.");return;}
+
+  const r=document.getElementById("resultado");
+  r.textContent="Buscando destino...";
+
+  try{
+    const g=await buscarDestino(destino);
+    if(!g) throw new Error("Destino no encontrado");
+
+    r.textContent="Calculando ruta...";
+    const route=await fetch(`https://router.project-osrm.org/route/v1/driving/${pos.lon},${pos.lat};${g.lon},${g.lat}?overview=false`).then(x=>x.json());
+
+    if(!route.routes || !route.routes.length) throw new Error("Ruta no encontrada");
+
+    const km=route.routes[0].distance/1000;
+    const airport=/aeropuerto|acapulco international|ACA\b/i.test(destino);
+    let fare;
+
+    if(airport){fare=Math.max(300,Math.round(km*20/10)*10);}
+    else if(km<=4)fare=80;
+    else if(km<=7)fare=100;
+    else if(km<=10)fare=120;
+    else if(km<=13)fare=140;
+    else if(km<=16)fare=160;
+    else if(km<=20)fare=190;
+    else if(km<=23)fare=220;
+    else if(km<=26)fare=250;
+    else if(km<=30)fare=280;
+    else if(km<=35)fare=320;
+    else fare=360;
+
+    r.innerHTML=`<b>Destino:</b> ${g.nombre || destino}<br><b>Distancia:</b> ${km.toFixed(1)} km<br><b>Tarifa estimada:</b> $${fare} MXN${airport?"<br><span class='small'>Aeropuerto: tarifa especial provisional</span>":""}`;
+  }catch(e){
+    r.textContent="No encontramos ese destino. Prueba con el nombre del lugar y agrega «Acapulco».";
+  }
+}
+</script>
+</body>
+</html>
