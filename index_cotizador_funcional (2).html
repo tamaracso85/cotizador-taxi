@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizador Taxi Acapulco</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f3f4f6;color:#222}
+.card{max-width:520px;margin:30px auto;padding:24px;background:white;border-radius:18px;box-shadow:0 4px 18px #0002}
+h1{margin-top:0;text-align:center}.btn{width:100%;padding:14px;margin:8px 0;border:0;border-radius:10px;background:#0b6efd;color:white;font-size:16px;cursor:pointer}
+input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #bbb;border-radius:10px;font-size:16px;margin:8px 0 12px}
+#resultado{margin-top:18px;padding:15px;border-radius:10px;background:#f1f5f9}
+.whatsapp{background:#198754}
+.small{font-size:13px;color:#666}
+#estadoServicio{margin:12px 0;padding:12px;border-radius:10px;text-align:center;font-weight:bold}
+.estado-activo{background:#dcfce7;color:#166534}
+.estado-inactivo{background:#fee2e2;color:#991b1b}
+.estado-error{background:#fef3c7;color:#92400e}
+button:disabled{opacity:.55;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>🚕 Cotizador de Taxi</h1>
+<p>Acapulco, Guerrero</p>
+<div id="estadoServicio" class="estado-error">⏳ Verificando disponibilidad del servicio...</div>
+<button class="btn" onclick="obtenerUbicacion()">📍 Usar mi ubicación</button>
+<div id="ubicacion" class="small">Aún no se ha obtenido tu ubicación.</div>
+<label>¿A dónde quieres ir?</label>
+<input id="destino" placeholder="Ej. Zócalo de Acapulco">
+<button id="btnCotizar" class="btn" onclick="cotizar()" disabled>💰 Calcular tarifa</button>
+<div id="resultado">Ingresa tu destino para calcular.</div>
+<a id="wa" href="https://wa.me/527444490147" target="_blank" style="text-decoration:none;pointer-events:none">
+<button id="btnWhatsApp" class="btn whatsapp" disabled>📲 Solicitar taxi</button>
+</a>
+</div>
+<script>
+let pos=null;
+let servicioActivo=false;
+const SUPABASE_URL="https://denzagpozepvrdyyzztxg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_P24mV2x-_JXHhkAa2kUbSQ_RSreYQhw";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
+async function verificarServicio(){
+const estado=document.getElementById("estadoServicio");
+const btnCotizar=document.getElementById("btnCotizar");
+const btnWhatsApp=document.getElementById("btnWhatsApp");
+const wa=document.getElementById("wa");
+try{
+const {data,error}=await supabaseClient
+.from("estado_servicio")
+.select("servicio_activo")
+.eq("id",1)
+.single();
+if(error) throw error;
+servicioActivo=data.servicio_activo === true;
+if(servicioActivo){
+estado.className="estado-activo";
+estado.textContent="🟢 Servicio disponible";
+btnCotizar.disabled=false;
+btnWhatsApp.disabled=false;
+wa.style.pointerEvents="auto";
+}else{
+estado.className="estado-inactivo";
+estado.textContent="🔴 Servicio no disponible en este momento";
+btnCotizar.disabled=true;
+btnWhatsApp.disabled=true;
+wa.style.pointerEvents="none";
+document.getElementById("resultado").textContent="El servicio no está disponible en este momento.";
+}
+}catch(error){
+/* Respaldo: si Supabase no responde, el cotizador sigue funcionando. */
+servicioActivo=true;
+estado.className="estado-activo";
+estado.textContent="🟢 Servicio disponible";
+btnCotizar.disabled=false;
+btnWhatsApp.disabled=false;
+wa.style.pointerEvents="auto";
+console.warn("Supabase no respondió; se activó el modo de respaldo.",error);
+}
+}
+verificarServicio();
+
+function obtenerUbicacion(){
+if(!navigator.geolocation){alert("Tu navegador no permite obtener la ubicación.");return;}
+navigator.geolocation.getCurrentPosition(
+p=>{pos={lat:p.coords.latitude,lon:p.coords.longitude};
+document.getElementById("ubicacion").textContent="✅ Ubicación obtenida correctamente.";},
+e=>alert("No se pudo obtener la ubicación. Activa el permiso de ubicación del navegador."),
+{enableHighAccuracy:true,timeout:30000,maximumAge:0});
+}
+const destinosConocidos = {
+"la gran plaza": {lat:16.861473, lon:-99.881912, nombre:"La Gran Plaza Acapulco"},
+"gran plaza": {lat:16.861473, lon:-99.881912, nombre:"La Gran Plaza Acapulco"},
+"hotel ritz": {lat:16.8506, lon:-99.9069, nombre:"Hotel Ritz Acapulco"},
+"zocalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
+"zócalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
+"aeropuerto": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"}
+};
+function normalizarTexto(t){
+return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
+}
+async function buscarDestino(destino){
+const clave=normalizarTexto(destino);
+for(const k of Object.keys(destinosConocidos)){
+if(clave===normalizarTexto(k) || clave.includes(normalizarTexto(k))){
+return destinosConocidos[k];
+}
+}
+const consultas=[
+`${destino}, Acapulco, Guerrero, México`,
+`${destino}, Acapulco de Juárez, Guerrero, México`,
+`${destino}, Acapulco, Gro., México`,
+`${destino}, Acapulco`
+];
+for(const q of consultas){
+const url="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=mx&accept-language=es&q="+encodeURIComponent(q);
+const respuesta=await fetch(url);
+if(!respuesta.ok) continue;
+const resultados=await respuesta.json();
+if(resultados.length){
+const mejor=resultados.find(x => /Acapulco|Guerrero/i.test(x.display_name || "")) || resultados[0];
+return {lat:Number(mejor.lat), lon:Number(mejor.lon), nombre:mejor.display_name};
+}
+}
+return null;
+}
+async function cotizar(){
+await verificarServicio();
+if(!servicioActivo){
+alert("El servicio no está disponible en este momento.");
+return;
+}
+const destino=document.getElementById("destino").value.trim();
+if(!pos){alert("Primero pulsa «Usar mi ubicación».");return;}
+if(!destino){alert("Escribe tu destino.");return;}
+const r=document.getElementById("resultado");
+r.textContent="Buscando destino...";
+try{
+const g=await buscarDestino(destino);
+if(!g) throw new Error("Destino no encontrado");
+r.textContent="Calculando ruta...";
+const route=await fetch(`https://router.project-osrm.org/route/v1/driving/${pos.lon},${pos.lat};${g.lon},${g.lat}?overview=false`).then(x=>x.json());
+if(!route.routes || !route.routes.length) throw new Error("Ruta no encontrada");
+const km=route.routes[0].distance/1000;
+const airport=/aeropuerto|acapulco international|ACA\b/i.test(destino);
+let fare;
+if(airport){fare=Math.max(300,Math.round(km*20/10)*10);}
+else if(km<=3)fare=70;
+else if(km<=5)fare=80;
+else if(km<=7)fare=100;
+else if(km<=9)fare=120;
+else if(km<=11)fare=130;
+else if(km<=13)fare=150;
+else if(km<=15)fare=170;
+else if(km<=18)fare=200;
+else if(km<=21)fare=240;
+else if(km<=24)fare=280;
+else if(km<=27)fare=320;
+else if(km<=30)fare=380;
+else if(km<=35)fare=450;
+else if(km<=40)fare=520;
+else if(km<=45)fare=600;
+else fare=700;
+const nombreDestino = g.nombre || destino;
+const mapas = `https://www.google.com/maps?q=${pos.lat},${pos.lon}`;
+const mensaje = `🚕 Solicitud de taxi\n\n📍 Mi ubicación: ${pos.lat.toFixed(6)}, ${pos.lon.toFixed(6)}\n🗺️ Ubicación en Google Maps: ${mapas}\n🎯 Destino: ${nombreDestino}\n📏 Distancia: ${km.toFixed(1)} km\n💰 Tarifa estimada: $${fare} MXN`;
+document.getElementById("wa").href = `https://wa.me/527444490147?text=${encodeURIComponent(mensaje)}`;
+r.innerHTML=`<b>Destino:</b> ${nombreDestino}<br><b>Distancia:</b> ${km.toFixed(1)} km<br><b>Tarifa estimada:</b> $${fare} MXN${airport?"<br><span class='small'>Aeropuerto: tarifa especial provisional</span>":""}`;
+}catch(e){
+r.textContent="No encontramos ese destino. Prueba con el nombre del lugar y agrega «Acapulco».";
+}
+}
+</script>
+</body>
+</html>
