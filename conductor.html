@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel del Conductor</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  margin:0;
+  background:#f3f4f6;
+  color:#222;
+}
+
+.card{
+  max-width:520px;
+  margin:30px auto;
+  padding:24px;
+  background:white;
+  border-radius:18px;
+  box-shadow:0 4px 18px #0002;
+}
+
+h1{
+  text-align:center;
+  margin-top:0;
+}
+
+.estado{
+  margin:25px 0;
+  padding:25px;
+  border-radius:15px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.activo{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.inactivo{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.error{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+button{
+  width:100%;
+  padding:16px;
+  margin:8px 0;
+  border:0;
+  border-radius:10px;
+  font-size:17px;
+  cursor:pointer;
+}
+
+.encender{
+  background:#198754;
+  color:white;
+}
+
+.apagar{
+  background:#dc3545;
+  color:white;
+}
+
+.actualizar{
+  background:#0b6efd;
+  color:white;
+}
+
+button:disabled{
+  opacity:.5;
+}
+
+.info{
+  margin-top:20px;
+  padding:15px;
+  background:#f1f5f9;
+  border-radius:10px;
+  font-size:14px;
+  color:#555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>🚕 Panel del Conductor</h1>
+
+<p style="text-align:center;">
+Control de disponibilidad del servicio
+</p>
+
+<div id="estado" class="estado error">
+⏳ Consultando servicio...
+</div>
+
+<button id="btnEncender" class="encender" onclick="cambiarServicio(true)">
+🟢 ACTIVAR SERVICIO
+</button>
+
+<button id="btnApagar" class="apagar" onclick="cambiarServicio(false)">
+🔴 DESACTIVAR SERVICIO
+</button>
+
+<button class="actualizar" onclick="consultarServicio()">
+🔄 ACTUALIZAR ESTADO
+</button>
+
+<div class="info">
+Cuando el servicio está activo, los pasajeros pueden utilizar el cotizador y solicitar el taxi.
+<br><br>
+Cuando está desactivado, el cotizador bloqueará las solicitudes.
+</div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://denzagpozepvrdyyzztxg.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_P24mV2x-_JXHhkAa2kUbSQ_RSreYQhw";
+
+const supabaseClient =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_PUBLISHABLE_KEY
+);
+
+async function consultarServicio(){
+
+const estado=document.getElementById("estado");
+
+estado.className="estado error";
+estado.textContent="⏳ Consultando servicio...";
+
+try{
+
+const {data,error}=await supabaseClient
+.from("estado_servicio")
+.select("servicio_activo")
+.eq("id",1)
+.single();
+
+if(error) throw error;
+
+if(data.servicio_activo===true){
+
+estado.className="estado activo";
+estado.textContent="🟢 SERVICIO ACTIVO";
+
+}else{
+
+estado.className="estado inactivo";
+estado.textContent="🔴 SERVICIO INACTIVO";
+
+}
+
+}catch(error){
+
+console.error(error);
+
+estado.className="estado error";
+estado.textContent="⚠️ No se pudo consultar el servicio";
+
+}
+
+}
+
+async function cambiarServicio(nuevoEstado){
+
+const estado=document.getElementById("estado");
+
+estado.className="estado error";
+estado.textContent="⏳ Guardando cambio...";
+
+try{
+
+const {error}=await supabaseClient
+.from("estado_servicio")
+.update({
+servicio_activo:nuevoEstado
+})
+.eq("id",1);
+
+if(error) throw error;
+
+if(nuevoEstado===true){
+
+estado.className="estado activo";
+estado.textContent="🟢 SERVICIO ACTIVADO";
+
+}else{
+
+estado.className="estado inactivo";
+estado.textContent="🔴 SERVICIO DESACTIVADO";
+
+}
+
+}catch(error){
+
+console.error(error);
+
+estado.className="estado error";
+estado.textContent="⚠️ No se pudo guardar el cambio";
+
+alert("No se pudo cambiar el estado del servicio. Vamos a configurar el permiso necesario.");
+
+}
+
+}
+
+consultarServicio();
+
+</script>
+
+</body>
+</html>
