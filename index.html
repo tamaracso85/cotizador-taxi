@@ -25,7 +25,7 @@ input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #bbb;border
 <button class="btn" onclick="cotizar()">💰 Calcular tarifa</button>
 <div id="resultado">Ingresa tu destino para calcular.</div>
 <a id="wa" href="https://wa.me/527444490147" target="_blank" style="text-decoration:none">
-<button class="btn whatsapp">📲 Contactar por WhatsApp</button>
+<button class="btn whatsapp">📲 Solicitar taxi</button>
 </a>
 </div>
 <script>
@@ -103,11 +103,11 @@ async function cotizar(){
     if(airport){fare=Math.max(300,Math.round(km*20/10)*10);}
     else if(km<=3)fare=70;
     else if(km<=5)fare=80;
-    else if(km<=7)fare=90;
-    else if(km<=9)fare=110;
-    else if(km<=11)fare=120;
-    else if(km<=13)fare=140;
-    else if(km<=15)fare=160;
+    else if(km<=7)fare=100;
+    else if(km<=9)fare=120;
+    else if(km<=11)fare=130;
+    else if(km<=13)fare=150;
+    else if(km<=15)fare=170;
     else if(km<=18)fare=200;
     else if(km<=21)fare=240;
     else if(km<=24)fare=280;
@@ -118,7 +118,11 @@ async function cotizar(){
     else if(km<=45)fare=600;
     else fare=700;
 
-    r.innerHTML=`<b>Destino:</b> ${g.nombre || destino}<br><b>Distancia:</b> ${km.toFixed(1)} km<br><b>Tarifa estimada:</b> $${fare} MXN${airport?"<br><span class='small'>Aeropuerto: tarifa especial provisional</span>":""}`;
+    const nombreDestino = g.nombre || destino;
+    const mapas = `https://www.google.com/maps?q=${pos.lat},${pos.lon}`;
+    const mensaje = `🚕 Solicitud de taxi\n\n📍 Mi ubicación: ${pos.lat.toFixed(6)}, ${pos.lon.toFixed(6)}\n🗺️ Ubicación en Google Maps: ${mapas}\n🎯 Destino: ${nombreDestino}\n📏 Distancia: ${km.toFixed(1)} km\n💰 Tarifa estimada: $${fare} MXN`;
+    document.getElementById("wa").href = `https://wa.me/527444490147?text=${encodeURIComponent(mensaje)}`;
+    r.innerHTML=`<b>Destino:</b> ${nombreDestino}<br><b>Distancia:</b> ${km.toFixed(1)} km<br><b>Tarifa estimada:</b> $${fare} MXN${airport?"<br><span class='small'>Aeropuerto: tarifa especial provisional</span>":""}`;
   }catch(e){
     r.textContent="No encontramos ese destino. Prueba con el nombre del lugar y agrega «Acapulco».";
   }
