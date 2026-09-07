@@ -328,7 +328,29 @@ out body geom;
             error
         );
     }
+// =============================
+// CRUCE CONOCIDO DE ACAPULCO
+// =============================
 
+const cruceTexto = normalizar(
+    `${calle1} ${calle2}`
+);
+
+if(
+    cruceTexto.includes("costera") &&
+    cruceTexto.includes("miguel") &&
+    cruceTexto.includes("aleman") &&
+    cruceTexto.includes("wilfrido") &&
+    cruceTexto.includes("massieu")
+){
+
+    return {
+        lat: 16.860963,
+        lon: -99.882125,
+        nombre:
+            "Av. Costera Miguel Alemán y Wilfrido Massieu, Acapulco"
+    };
+}
     return null;
 }
   // ==============================
