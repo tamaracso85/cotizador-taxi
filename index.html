@@ -116,31 +116,31 @@ async function buscarDestino(destino){
 
   let consultas=[];
 
-  // Detectar cruces de calles
-  const cruce=texto.match(
-    /^(.+?)\s+(?:y|con|esquina\s+con|esquina)\s+(.+?)(?:\s+acapulco)?$/i
+ // Detectar cruces de calles
+const cruce = texto.match(
+  /^(.+?)\s+(?:esquina\s+con|esquina|y|con)\s+(.+?)(?:\s*,?\s*acapulco)?$/i
+);
+
+if(cruce){
+  const calle1 = cruce[1].trim();
+  const calle2 = cruce[2].trim();
+
+  consultas.push(
+    `${calle1} y ${calle2}, Acapulco, Guerrero, México`
   );
 
-  if(cruce){
-    const calle1=cruce[1].trim();
-    const calle2=cruce[2].trim();
+  consultas.push(
+    `${calle1} esquina con ${calle2}, Acapulco, Guerrero, México`
+  );
 
-    consultas.push(
-      `${calle1} y ${calle2}, Acapulco, Guerrero, México`
-    );
+  consultas.push(
+    `${calle2} y ${calle1}, Acapulco, Guerrero, México`
+  );
 
-    consultas.push(
-      `${calle1} esquina con ${calle2}, Acapulco, Guerrero, México`
-    );
-
-    consultas.push(
-      `${calle2} y ${calle1}, Acapulco, Guerrero, México`
-    );
-
-    consultas.push(
-      `${calle1} con ${calle2}, Acapulco, Guerrero, México`
-    );
-  }
+  consultas.push(
+    `${calle1} con ${calle2}, Acapulco, Guerrero, México`
+  );
+}
 
   // Búsqueda normal
   consultas.push(
