@@ -164,49 +164,119 @@ async function buscarDestino(destino){
   // ==============================
   // BUSCAR INTERSECCIÓN REAL
   // ==============================
-  async function buscarCruce(calle1, calle2){
+async function buscarCruce(calle1, calle2){
+
+  async function localizarCalle(nombre){
+
+    const consultas = [
+      `${nombre}, Acapulco, Guerrero, México`,
+      `calle ${nombre}, Acapulco, Guerrero, México`,
+      `avenida ${nombre}, Acapulco, Guerrero, México`
+    ];
+
+    for(const consulta of consultas){
+
+      try{
+
+        const url =
+          "https://nominatim.openstreetmap.org/search" +
+          "?format=jsonv2" +
+          "&limit=5" +
+          "&countrycodes=mx" +
+          "&accept-language=es" +
+          "&q=" +
+          encodeURIComponent(consulta);
+
+        const respuesta = await fetch(url);
+
+        if(!respuesta.ok) continue;
+
+        const resultados = await respuesta.json();
+
+        if(resultados.length){
+
+          const mejor = resultados.find(x =>
+            /Acapulco|Guerrero/i.test(
+              x.display_name || ""
+            )
+          ) || resultados[0];
+
+          return {
+            lat:Number(mejor.lat),
+            lon:Number(mejor.lon)
+          };
+
+        }
+
+      }catch(error){
+
+        console.warn("Error localizando calle:",error);
+
+      }
+    }
+
+    return null;
+  }
+
+
+  const punto1 = await localizarCalle(calle1);
+  const punto2 = await localizarCalle(calle2);
+
+  if(!punto1 || !punto2){
+    return null;
+  }
+
+
+  // Crear una zona pequeña alrededor de las dos calles
+  const minLat = Math.min(punto1.lat,punto2.lat) - 0.02;
+  const maxLat = Math.max(punto1.lat,punto2.lat) + 0.02;
+  const minLon = Math.min(punto1.lon,punto2.lon) - 0.02;
+  const maxLon = Math.max(punto1.lon,punto2.lon) + 0.02;
+
+  const bbox =
+    `${minLat},${minLon},${maxLat},${maxLon}`;
+
 
   const nombre1 = escaparRegex(calle1);
   const nombre2 = escaparRegex(calle2);
 
-  // Buscar primero cerca de la ubicación del pasajero
-  let bbox;
-
-  if(pos){
-    const lat = pos.lat;
-    const lon = pos.lon;
-
-    const dLat = 0.15;
-    const dLon = 0.18;
-
-    bbox = `${lat-dLat},${lon-dLon},${lat+dLat},${lon+dLon}`;
-  }else{
-    bbox = "16.78,-100.02,17.00,-99.70";
-  }
 
   const consulta = `
 [out:json][timeout:8];
+
 way["highway"]["name"~"${nombre1}",i](${bbox})->.calle1;
+
 way["highway"]["name"~"${nombre2}",i](${bbox})->.calle2;
+
 node.calle1.calle2;
+
 out;
 `;
+
 
   const servidores = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter"
   ];
 
+
   for(const servidor of servidores){
 
     const controlador = new AbortController();
-    const temporizador = setTimeout(() => controlador.abort(), 8000);
+
+    const temporizador =
+      setTimeout(() => controlador.abort(),8000);
+
 
     try{
 
       const respuesta = await fetch(
-        servidor + "?data=" + encodeURIComponent(consulta),
-        {signal: controlador.signal}
+        servidor +
+        "?data=" +
+        encodeURIComponent(consulta),
+        {
+          signal:controlador.signal
+        }
       );
 
       clearTimeout(temporizador);
@@ -215,23 +285,26 @@ out;
 
       const datos = await respuesta.json();
 
+
       if(datos.elements && datos.elements.length){
 
-        const punto = datos.elements.find(
-          x => x.type === "node" &&
-               typeof x.lat === "number" &&
-               typeof x.lon === "number"
+        const punto = datos.elements.find(x =>
+          x.type === "node" &&
+          typeof x.lat === "number" &&
+          typeof x.lon === "number"
         );
+
 
         if(punto){
 
           return {
-            lat: Number(punto.lat),
-            lon: Number(punto.lon),
-            nombre: `${calle1} y ${calle2}, Acapulco`
+            lat:Number(punto.lat),
+            lon:Number(punto.lon),
+            nombre:`${calle1} y ${calle2}, Acapulco`
           };
 
         }
+
       }
 
     }catch(error){
@@ -239,12 +312,14 @@ out;
       clearTimeout(temporizador);
 
       console.warn(
-        "Servidor de cruces no respondió:",
+        "Servidor de intersecciones no respondió:",
         servidor
       );
 
     }
+
   }
+
 
   return null;
 }
