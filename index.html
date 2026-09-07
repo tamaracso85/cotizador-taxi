@@ -166,66 +166,88 @@ async function buscarDestino(destino){
   // ==============================
   async function buscarCruce(calle1, calle2){
 
-    const nombre1 = escaparRegex(calle1);
-    const nombre2 = escaparRegex(calle2);
+  const nombre1 = escaparRegex(calle1);
+  const nombre2 = escaparRegex(calle2);
 
-    const bbox = "16.78,-100.02,17.00,-99.70";
+  // Buscar primero cerca de la ubicación del pasajero
+  let bbox;
 
-   const consultasOverpass = [
-  `[out:json][timeout:25];
-  way["highway"]["name"~"${nombre1}",i](${bbox})->.calle1;
-  way["highway"]["name"~"${nombre2}",i](${bbox})->.calle2;
-  node.calle1.calle2;
-  out;`
-];
+  if(pos){
+    const lat = pos.lat;
+    const lon = pos.lon;
 
-    const servidores = [
-      "https://overpass-api.de/api/interpreter",
-      "https://overpass.kumi.systems/api/interpreter"
-    ];
+    const dLat = 0.15;
+    const dLon = 0.18;
 
-    for(const consulta of consultasOverpass){
+    bbox = `${lat-dLat},${lon-dLon},${lat+dLat},${lon+dLon}`;
+  }else{
+    bbox = "16.78,-100.02,17.00,-99.70";
+  }
 
-      for(const servidor of servidores){
+  const consulta = `
+[out:json][timeout:8];
+way["highway"]["name"~"${nombre1}",i](${bbox})->.calle1;
+way["highway"]["name"~"${nombre2}",i](${bbox})->.calle2;
+node.calle1.calle2;
+out;
+`;
 
-        try{
+  const servidores = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter"
+  ];
 
-          const respuesta = await fetch(
-            servidor + "?data=" + encodeURIComponent(consulta)
-          );
+  for(const servidor of servidores){
 
-          if(!respuesta.ok) continue;
+    const controlador = new AbortController();
+    const temporizador = setTimeout(() => controlador.abort(), 8000);
 
-          const datos = await respuesta.json();
+    try{
 
-          if(datos.elements && datos.elements.length){
+      const respuesta = await fetch(
+        servidor + "?data=" + encodeURIComponent(consulta),
+        {signal: controlador.signal}
+      );
 
-            const punto = datos.elements.find(
-              x => x.type === "node" && x.lat && x.lon
-            );
+      clearTimeout(temporizador);
 
-            if(punto){
+      if(!respuesta.ok) continue;
 
-              return {
-                lat: Number(punto.lat),
-                lon: Number(punto.lon),
-                nombre: `${calle1} y ${calle2}, Acapulco`
-              };
+      const datos = await respuesta.json();
 
-            }
-          }
+      if(datos.elements && datos.elements.length){
 
-        }catch(error){
+        const punto = datos.elements.find(
+          x => x.type === "node" &&
+               typeof x.lat === "number" &&
+               typeof x.lon === "number"
+        );
 
-          console.error("Error buscando cruce:",error);
+        if(punto){
+
+          return {
+            lat: Number(punto.lat),
+            lon: Number(punto.lon),
+            nombre: `${calle1} y ${calle2}, Acapulco`
+          };
 
         }
       }
-    }
 
-    return null;
+    }catch(error){
+
+      clearTimeout(temporizador);
+
+      console.warn(
+        "Servidor de cruces no respondió:",
+        servidor
+      );
+
+    }
   }
 
+  return null;
+}
   // ==============================
   // DETECTAR CRUCE
   // ==============================
