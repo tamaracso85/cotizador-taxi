@@ -167,10 +167,30 @@ async function buscarDestino(destino){
 
 async function buscarCruce(calle1, calle2){
 
+    const normalizar = texto =>
+        texto
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/\b(av|ave|avenida|calle|c|blvd|boulevard)\.?\b/g,"")
+        .replace(/\s+/g," ")
+        .trim();
+
+    const c1 = normalizar(calle1);
+    const c2 = normalizar(calle2);
+
     const consultas = [
+
         `${calle1} y ${calle2}, Acapulco, Guerrero, México`,
+
+        `${calle1} con ${calle2}, Acapulco, Guerrero, México`,
+
+        `${calle1} esquina ${calle2}, Acapulco, Guerrero, México`,
+
         `${calle1} esquina con ${calle2}, Acapulco, Guerrero, México`,
-        `intersección de ${calle1} y ${calle2}, Acapulco, Guerrero, México`
+
+        `${c1} y ${c2}, Acapulco, Guerrero, México`
+
     ];
 
     for(const consulta of consultas){
@@ -180,10 +200,12 @@ async function buscarCruce(calle1, calle2){
             const url =
                 "https://nominatim.openstreetmap.org/search" +
                 "?format=jsonv2" +
-                "&limit=5" +
+                "&limit=10" +
                 "&countrycodes=mx" +
+                "&addressdetails=1" +
                 "&accept-language=es" +
-                "&q=" + encodeURIComponent(consulta);
+                "&q=" +
+                encodeURIComponent(consulta);
 
             const respuesta = await fetch(url);
 
@@ -191,14 +213,31 @@ async function buscarCruce(calle1, calle2){
 
             const resultados = await respuesta.json();
 
-            if(resultados.length){
+            if(!resultados.length) continue;
 
-                const punto = resultados.find(x =>
-                    typeof x.lat === "string" &&
-                    typeof x.lon === "string"
-                );
+            for(const punto of resultados){
 
-                if(punto){
+                if(
+                    typeof punto.lat !== "string" ||
+                    typeof punto.lon !== "string"
+                ){
+                    continue;
+                }
+
+                const textoResultado =
+                    normalizar(
+                        (punto.display_name || "") +
+                        " " +
+                        (punto.name || "")
+                    );
+
+                const tieneCalle1 =
+                    textoResultado.includes(c1);
+
+                const tieneCalle2 =
+                    textoResultado.includes(c2);
+
+                if(tieneCalle1 && tieneCalle2){
 
                     return {
                         lat: Number(punto.lat),
