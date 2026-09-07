@@ -102,47 +102,153 @@ function normalizarTexto(t){
 return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
 }
 async function buscarDestino(destino){
-  const texto=destino.trim();
-  const normalizado=normalizarTexto(texto);
 
-  // Destinos conocidos
+  const texto = destino.trim();
+  const normalizado = normalizarTexto(texto);
+
+  // ==============================
+  // DESTINOS CONOCIDOS
+  // ==============================
   for(const k of Object.keys(destinosConocidos)){
-    const clave=normalizarTexto(k);
+    const clave = normalizarTexto(k);
 
-    if(normalizado===clave || normalizado.includes(clave)){
+    if(normalizado === clave || normalizado.includes(clave)){
       return destinosConocidos[k];
     }
   }
 
-  let consultas=[];
+  // ==============================
+  // FUNCIONES AUXILIARES
+  // ==============================
+  function escaparRegex(valor){
+    return valor.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  }
 
- // Detectar cruces de calles
-const cruce = texto.match(
-  /^(.+?)\s+(?:esquina\s+con|esquina|y|con)\s+(.+?)(?:\s*,?\s*acapulco)?$/i
-);
+  function limpiarNombre(valor){
+    return valor
+      .replace(/\b(acapulco|guerrero|mexico|méxico)\b/gi,"")
+      .replace(/\b(esquina\s+con|esquina|con|y)\b/gi," ")
+      .replace(/\b(av|ave|avenida|calle|c)\.?\b/gi," ")
+      .replace(/\s+/g," ")
+      .trim();
+  }
 
-if(cruce){
-  const calle1 = cruce[1].trim();
-  const calle2 = cruce[2].trim();
+  function separarCruce(valor){
 
-  consultas.push(
-    `${calle1} y ${calle2}, Acapulco, Guerrero, México`
-  );
+    let limpio = valor
+      .replace(/\b(acapulco|guerrero|mexico|méxico)\b/gi," ")
+      .replace(/\s+/g," ")
+      .trim();
 
-  consultas.push(
-    `${calle1} esquina con ${calle2}, Acapulco, Guerrero, México`
-  );
+    const patrones = [
+      /\s+esquina\s+con\s+/i,
+      /\s+esquina\s+/i,
+      /\s+y\s+/i,
+      /\s+con\s+/i
+    ];
 
-  consultas.push(
-    `${calle2} y ${calle1}, Acapulco, Guerrero, México`
-  );
+    for(const patron of patrones){
+      const partes = limpio.split(patron);
 
-  consultas.push(
-    `${calle1} con ${calle2}, Acapulco, Guerrero, México`
-  );
-}
+      if(partes.length === 2){
+        return [
+          limpiarNombre(partes[0]),
+          limpiarNombre(partes[1])
+        ];
+      }
+    }
 
-  // Búsqueda normal
+    return null;
+  }
+
+  // ==============================
+  // BUSCAR INTERSECCIÓN REAL
+  // ==============================
+  async function buscarCruce(calle1, calle2){
+
+    const nombre1 = escaparRegex(calle1);
+    const nombre2 = escaparRegex(calle2);
+
+    const bbox = "16.78,-100.02,17.00,-99.70";
+
+   const consultasOverpass = [
+  `[out:json][timeout:25];
+  way["highway"]["name"~"${nombre1}",i](${bbox})->.calle1;
+  way["highway"]["name"~"${nombre2}",i](${bbox})->.calle2;
+  node.calle1.calle2;
+  out;`
+];
+
+    const servidores = [
+      "https://overpass-api.de/api/interpreter",
+      "https://overpass.kumi.systems/api/interpreter"
+    ];
+
+    for(const consulta of consultasOverpass){
+
+      for(const servidor of servidores){
+
+        try{
+
+          const respuesta = await fetch(
+            servidor + "?data=" + encodeURIComponent(consulta)
+          );
+
+          if(!respuesta.ok) continue;
+
+          const datos = await respuesta.json();
+
+          if(datos.elements && datos.elements.length){
+
+            const punto = datos.elements.find(
+              x => x.type === "node" && x.lat && x.lon
+            );
+
+            if(punto){
+
+              return {
+                lat: Number(punto.lat),
+                lon: Number(punto.lon),
+                nombre: `${calle1} y ${calle2}, Acapulco`
+              };
+
+            }
+          }
+
+        }catch(error){
+
+          console.error("Error buscando cruce:",error);
+
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // ==============================
+  // DETECTAR CRUCE
+  // ==============================
+  const cruce = separarCruce(texto);
+
+  if(cruce){
+
+    const resultadoCruce = await buscarCruce(
+      cruce[0],
+      cruce[1]
+    );
+
+    if(resultadoCruce){
+      return resultadoCruce;
+    }
+  }
+
+  // ==============================
+  // BÚSQUEDA NORMAL
+  // ==============================
+
+  const consultas = [];
+
   consultas.push(
     `${texto}, Acapulco, Guerrero, México`
   );
@@ -155,34 +261,70 @@ if(cruce){
     `${texto}, Acapulco, Guerrero`
   );
 
-  // Consultar OpenStreetMap
-  for(const consulta of consultas){
-    try{
-      const url=
-        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=mx&q=${encodeURIComponent(consulta)}`;
+  consultas.push(
+    `${texto}, Acapulco`
+  );
 
-      const respuesta=await fetch(url);
+  // ==============================
+  // CONSULTAR NOMINATIM
+  // ==============================
+
+  for(const consulta of consultas){
+
+    try{
+
+      const url =
+        "https://nominatim.openstreetmap.org/search" +
+        "?format=jsonv2" +
+        "&limit=8" +
+        "&countrycodes=mx" +
+        "&accept-language=es" +
+        "&q=" +
+        encodeURIComponent(consulta);
+
+      const respuesta = await fetch(url);
 
       if(!respuesta.ok) continue;
 
-      const resultados=await respuesta.json();
+      const resultados = await respuesta.json();
 
       if(resultados.length){
-        const mejor=resultados.find(x =>
-          /Acapulco|Guerrero/i.test(
-            `${x.display_name||""} ${x.address?.city||""} ${x.address?.town||""}`
-          )
-        ) || resultados[0];
+
+        // Priorizar Acapulco
+       const candidatos = resultados.filter(x =>
+  /Acapulco|Guerrero/i.test(
+    (x.display_name || "") + " " +
+    (x.address?.city || "") + " " +
+    (x.address?.town || "") + " " +
+    (x.address?.municipality || "") + " " +
+    (x.address?.suburb || "") + " " +
+    (x.address?.neighbourhood || "") + " " +
+    (x.address?.village || "") + " " +
+    (x.address?.district || "")
+  )
+);
+  
+
+        const mejor =
+          candidatos[0] ||
+          resultados[0];
 
         return {
-          lat:Number(mejor.lat),
-          lon:Number(mejor.lon),
-          nombre:mejor.display_name || texto
+          lat: Number(mejor.lat),
+          lon: Number(mejor.lon),
+          nombre:
+            mejor.display_name ||
+            texto
         };
       }
 
     }catch(error){
-      console.error("Error buscando destino:",error);
+
+      console.error(
+        "Error buscando destino:",
+        error
+      );
+
     }
   }
 
