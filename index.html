@@ -165,6 +165,10 @@ async function buscarDestino(destino){
 // BUSCAR INTERSECCIÓN REAL
 // =============================
 
+// =============================
+// BUSCAR INTERSECCIÓN REAL
+// =============================
+
 async function buscarCruce(calle1, calle2){
 
     const normalizar = texto =>
@@ -172,92 +176,157 @@ async function buscarCruce(calle1, calle2){
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g,"")
-        .replace(/\b(av|ave|avenida|calle|c|blvd|boulevard)\.?\b/g,"")
+        .replace(/\b(av|ave|avenida|calle|c|blvd|boulevard|carretera)\b/g," ")
+        .replace(/[^\w\s]/g," ")
         .replace(/\s+/g," ")
         .trim();
 
-    const c1 = normalizar(calle1);
-    const c2 = normalizar(calle2);
+    const prepararPatron = texto => {
 
-    const consultas = [
+        const palabras = normalizar(texto)
+            .split(" ")
+            .filter(p => p.length >= 4);
 
-        `${calle1} y ${calle2}, Acapulco, Guerrero, México`,
+        return palabras
+            .map(p => p.substring(0, Math.max(4, p.length - 1)))
+            .join(".*");
+    };
 
-        `${calle1} con ${calle2}, Acapulco, Guerrero, México`,
+    const patron1 = prepararPatron(calle1);
+    const patron2 = prepararPatron(calle2);
 
-        `${calle1} esquina ${calle2}, Acapulco, Guerrero, México`,
+    if(!patron1 || !patron2){
+        return null;
+    }
 
-        `${calle1} esquina con ${calle2}, Acapulco, Guerrero, México`,
+    try{
 
-        `${c1} y ${c2}, Acapulco, Guerrero, México`
+        // Zona amplia de Acapulco
+        const bbox = "16.70,-100.05,17.00,-99.65";
 
-    ];
+        const consulta = `
+[out:json][timeout:25];
 
-    for(const consulta of consultas){
+(
+  way["highway"]["name"~"${patron1}",i](${bbox});
+  way["highway"]["name"~"${patron2}",i](${bbox});
+);
 
-        try{
+out body geom;
+`;
 
-            const url =
-                "https://nominatim.openstreetmap.org/search" +
-                "?format=jsonv2" +
-                "&limit=10" +
-                "&countrycodes=mx" +
-                "&addressdetails=1" +
-                "&accept-language=es" +
-                "&q=" +
-                encodeURIComponent(consulta);
+        const url =
+            "https://overpass-api.de/api/interpreter";
 
-            const respuesta = await fetch(url);
+        const respuesta = await fetch(
+            url,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/x-www-form-urlencoded"
+                },
+                body:
+                    "data=" +
+                    encodeURIComponent(consulta)
+            }
+        );
 
-            if(!respuesta.ok) continue;
+        if(!respuesta.ok){
+            console.warn(
+                "Overpass respondió con error:",
+                respuesta.status
+            );
+            return null;
+        }
 
-            const resultados = await respuesta.json();
+        const datos = await respuesta.json();
 
-            if(!resultados.length) continue;
+        const elementos = datos.elements || [];
 
-            for(const punto of resultados){
+        const vias1 = [];
+        const vias2 = [];
 
-                if(
-                    typeof punto.lat !== "string" ||
-                    typeof punto.lon !== "string"
-                ){
+        for(const via of elementos){
+
+            if(!via.tags || !via.tags.name){
+                continue;
+            }
+
+            const nombre = normalizar(via.tags.name);
+
+            const coincide1 =
+                normalizar(calle1)
+                .split(" ")
+                .filter(p => p.length >= 4)
+                .every(p => nombre.includes(p.substring(0,4)));
+
+            const coincide2 =
+                normalizar(calle2)
+                .split(" ")
+                .filter(p => p.length >= 4)
+                .every(p => nombre.includes(p.substring(0,4)));
+
+            if(coincide1){
+                vias1.push(via);
+            }
+
+            if(coincide2){
+                vias2.push(via);
+            }
+        }
+
+        // Buscar un nodo compartido entre ambas calles
+        for(const via1 of vias1){
+
+            if(!via1.nodes || !via1.geometry){
+                continue;
+            }
+
+            for(const via2 of vias2){
+
+                if(!via2.nodes || !via2.geometry){
                     continue;
                 }
 
-                const textoResultado =
-                    normalizar(
-                        (punto.display_name || "") +
-                        " " +
-                        (punto.name || "")
-                    );
+                const nodos2 =
+                    new Set(via2.nodes);
 
-                const tieneCalle1 =
-                    textoResultado.includes(c1);
+                for(let i = 0; i < via1.nodes.length; i++){
 
-                const tieneCalle2 =
-                    textoResultado.includes(c2);
+                    const nodo =
+                        via1.nodes[i];
 
-                if(tieneCalle1 && tieneCalle2){
+                    if(nodos2.has(nodo)){
 
-                    return {
-                        lat: Number(punto.lat),
-                        lon: Number(punto.lon),
-                        nombre: `${calle1} y ${calle2}, Acapulco`
-                    };
+                        const punto =
+                            via1.geometry[i];
 
+                        if(
+                            punto &&
+                            typeof punto.lat === "number" &&
+                            typeof punto.lon === "number"
+                        ){
+
+                            return {
+                                lat: punto.lat,
+                                lon: punto.lon,
+                                nombre:
+                                    `${calle1} y ${calle2}, Acapulco`
+                            };
+
+                        }
+                    }
                 }
-
             }
-
-        }catch(error){
-
-            console.warn(
-                "Error buscando intersección:",
-                error
-            );
-
         }
 
+    }catch(error){
+
+        console.warn(
+            "Error buscando intersección en OpenStreetMap:",
+            error
+        );
     }
 
     return null;
