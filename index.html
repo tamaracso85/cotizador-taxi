@@ -173,13 +173,13 @@ async function buscarCruce(calle1, calle2){
 
     const normalizar = texto =>
         texto
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g,"")
-        .replace(/\b(av|ave|avenida|calle|c|blvd|boulevard|carretera)\b/g," ")
-        .replace(/[^\w\s]/g," ")
-        .replace(/\s+/g," ")
-        .trim();
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g,"")
+            .replace(/\b(av|ave|avenida|calle|c|blvd|boulevard|carretera)\b/g," ")
+            .replace(/[^\w\s]/g," ")
+            .replace(/\s+/g," ")
+            .trim();
 
     const prepararPatron = texto => {
 
@@ -188,8 +188,9 @@ async function buscarCruce(calle1, calle2){
             .filter(p => p.length >= 4);
 
         return palabras
-            .map(p => p.substring(0, Math.max(4, p.length - 1)))
+            .map(p => p.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"))
             .join(".*");
+
     };
 
     const patron1 = prepararPatron(calle1);
@@ -233,10 +234,12 @@ out body geom;
         );
 
         if(!respuesta.ok){
+
             console.warn(
                 "Overpass respondió con error:",
                 respuesta.status
             );
+
             return null;
         }
 
@@ -253,19 +256,24 @@ out body geom;
                 continue;
             }
 
-            const nombre = normalizar(via.tags.name);
+            const nombre =
+                normalizar(via.tags.name);
 
             const coincide1 =
                 normalizar(calle1)
-                .split(" ")
-                .filter(p => p.length >= 4)
-                .every(p => nombre.includes(p.substring(0,4)));
+                    .split(" ")
+                    .filter(p => p.length >= 4)
+                    .every(p =>
+                        nombre.includes(p)
+                    );
 
             const coincide2 =
                 normalizar(calle2)
-                .split(" ")
-                .filter(p => p.length >= 4)
-                .every(p => nombre.includes(p.substring(0,4)));
+                    .split(" ")
+                    .filter(p => p.length >= 4)
+                    .every(p =>
+                        nombre.includes(p)
+                    );
 
             if(coincide1){
                 vias1.push(via);
@@ -314,7 +322,6 @@ out body geom;
                                 nombre:
                                     `${calle1} y ${calle2}, Acapulco`
                             };
-
                         }
                     }
                 }
@@ -327,30 +334,9 @@ out body geom;
             "Error buscando intersección en OpenStreetMap:",
             error
         );
+
     }
-// =============================
-// CRUCE CONOCIDO DE ACAPULCO
-// =============================
 
-const cruceTexto = normalizar(
-    `${calle1} ${calle2}`
-);
-
-if(
-    cruceTexto.includes("costera") &&
-    cruceTexto.includes("miguel") &&
-    cruceTexto.includes("aleman") &&
-    cruceTexto.includes("wilfrido") &&
-    cruceTexto.includes("massieu")
-){
-
-    return {
-        lat: 16.860963,
-        lon: -99.882125,
-        nombre:
-            "Av. Costera Miguel Alemán y Wilfrido Massieu, Acapulco"
-    };
-}
     return null;
 }
   // ==============================
