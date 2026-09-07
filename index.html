@@ -161,166 +161,67 @@ async function buscarDestino(destino){
     return null;
   }
 
-  // ==============================
-  // BUSCAR INTERSECCIÓN REAL
-  // ==============================
+// =============================
+// BUSCAR INTERSECCIÓN REAL
+// =============================
+
 async function buscarCruce(calle1, calle2){
 
-  async function localizarCalle(nombre){
-
     const consultas = [
-      `${nombre}, Acapulco, Guerrero, México`,
-      `calle ${nombre}, Acapulco, Guerrero, México`,
-      `avenida ${nombre}, Acapulco, Guerrero, México`
+        `${calle1} y ${calle2}, Acapulco, Guerrero, México`,
+        `${calle1} esquina con ${calle2}, Acapulco, Guerrero, México`,
+        `intersección de ${calle1} y ${calle2}, Acapulco, Guerrero, México`
     ];
 
     for(const consulta of consultas){
 
-      try{
+        try{
 
-        const url =
-          "https://nominatim.openstreetmap.org/search" +
-          "?format=jsonv2" +
-          "&limit=5" +
-          "&countrycodes=mx" +
-          "&accept-language=es" +
-          "&q=" +
-          encodeURIComponent(consulta);
+            const url =
+                "https://nominatim.openstreetmap.org/search" +
+                "?format=jsonv2" +
+                "&limit=5" +
+                "&countrycodes=mx" +
+                "&accept-language=es" +
+                "&q=" + encodeURIComponent(consulta);
 
-        const respuesta = await fetch(url);
+            const respuesta = await fetch(url);
 
-        if(!respuesta.ok) continue;
+            if(!respuesta.ok) continue;
 
-        const resultados = await respuesta.json();
+            const resultados = await respuesta.json();
 
-        if(resultados.length){
+            if(resultados.length){
 
-          const mejor = resultados.find(x =>
-            /Acapulco|Guerrero/i.test(
-              x.display_name || ""
-            )
-          ) || resultados[0];
+                const punto = resultados.find(x =>
+                    typeof x.lat === "string" &&
+                    typeof x.lon === "string"
+                );
 
-          return {
-            lat:Number(mejor.lat),
-            lon:Number(mejor.lon)
-          };
+                if(punto){
 
-        }
+                    return {
+                        lat: Number(punto.lat),
+                        lon: Number(punto.lon),
+                        nombre: `${calle1} y ${calle2}, Acapulco`
+                    };
 
-      }catch(error){
+                }
 
-        console.warn("Error localizando calle:",error);
+            }
 
-      }
-    }
+        }catch(error){
 
-async function buscarCruce(calle1, calle2){
-
-  const nombre1 = escaparRegex(calle1);
-  const nombre2 = escaparRegex(calle2);
-
-  const consultas = [
-
-`
-[out:json][timeout:12];
-
-way["highway"]["name"~"${nombre1}",i]
-(16.78,-100.02,17.00,-99.70)->.calle1;
-
-way["highway"]["name"~"${nombre2}",i]
-(16.78,-100.02,17.00,-99.70)->.calle2;
-
-node(w.calle1)(w.calle2);
-
-out;
-`,
-
-`
-[out:json][timeout:12];
-
-way["highway"~"^(primary|secondary|tertiary|unclassified|residential|living_street|service)$"]
-["name"~"${nombre1}",i]
-(16.78,-100.02,17.00,-99.70)->.calle1;
-
-way["highway"~"^(primary|secondary|tertiary|unclassified|residential|living_street|service)$"]
-["name"~"${nombre2}",i]
-(16.78,-100.02,17.00,-99.70)->.calle2;
-
-node(w.calle1)(w.calle2);
-
-out;
-`
-
-  ];
-
-  const servidores = [
-    "https://overpass-api.de/api/interpreter",
-    "https://overpass.kumi.systems/api/interpreter"
-  ];
-
-  for(const consulta of consultas){
-
-    for(const servidor of servidores){
-
-      const controlador = new AbortController();
-
-      const temporizador =
-        setTimeout(() => controlador.abort(), 8000);
-
-      try{
-
-        const respuesta = await fetch(
-          servidor +
-          "?data=" +
-          encodeURIComponent(consulta),
-          {
-            signal: controlador.signal
-          }
-        );
-
-        clearTimeout(temporizador);
-
-        if(!respuesta.ok) continue;
-
-        const datos = await respuesta.json();
-
-        if(datos.elements && datos.elements.length){
-
-          const punto = datos.elements.find(x =>
-            x.type === "node" &&
-            typeof x.lat === "number" &&
-            typeof x.lon === "number"
-          );
-
-          if(punto){
-
-            return {
-              lat: Number(punto.lat),
-              lon: Number(punto.lon),
-              nombre: `${calle1} y ${calle2}, Acapulco`
-            };
-
-          }
+            console.warn(
+                "Error buscando intersección:",
+                error
+            );
 
         }
 
-      }catch(error){
-
-        clearTimeout(temporizador);
-
-        console.warn(
-          "Error buscando intersección:",
-          error
-        );
-
-      }
-
     }
 
-  }
-
-  return null;
+    return null;
 }
   // ==============================
   // DETECTAR CRUCE
