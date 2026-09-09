@@ -528,7 +528,7 @@ const airport=/aeropuerto|acapulco international|ACA\b/i.test(destino);
 
 let fare;
 if(airport){fare=Math.max(300,Math.round(km*20/10)*10);}
-else if(km<=3)fare=70;
+else if(km<=3)fare=80;
 else if(km<=5)fare=80;
 else if(km<=7)fare=100;
 else if(km<=9)fare=120;
