@@ -142,6 +142,17 @@ async function buscarDestino(destino){
     }
   }
 
+  // Cruces conocidos: aceptar variaciones naturales de escritura.
+  // Ejemplo: "calle 5 y Emiliano Zapata col Bella Vista".
+  const esCalle5BellaVista =
+    /\bcalle\s*5\b/.test(normalizado) &&
+    /\bemiliano\s+zapata\b/.test(normalizado) &&
+    /\bbella\s+vista\b/.test(normalizado);
+
+  if(esCalle5BellaVista){
+    return destinosConocidos["calle 5 y emiliano zapata col bella vista"];
+  }
+
   // ==============================
   // FUNCIONES AUXILIARES
   // ==============================
@@ -211,7 +222,7 @@ async function buscarCruce(calle1, calle2){
 
         const palabras = normalizar(texto)
             .split(" ")
-            .filter(p => p.length >= 2 || /^\\d+$/.test(p));
+            .filter(p => p.length >= 2 || /^\d+$/.test(p));
 
         return palabras
             .map(p => p.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"))
