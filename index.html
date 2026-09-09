@@ -734,11 +734,14 @@ const route=await fetch(
 if(!route.routes || !route.routes.length) throw new Error("Ruta no encontrada");
 
 const km=route.routes[0].distance/1000;
-const airport=/aeropuerto|acapulco international|\baca\b/i.test(destino);
+
+// Tarifas normales: se muestran únicamente fuera de las zonas especiales.
+// En Aeropuerto, Barra Vieja y Barra de Coyuca el precio se cotiza con el chofer.
+const zonaEspecial =
+/aeropuerto|acapulco international|\baca\b|barra\s+vieja|barra\s+de\s+coyuca|barra\s+coyuca/i.test(destino);
 
 let fare;
-if(airport){fare=Math.max(300,Math.round(km*20/10)*10);}
-else if(km<=3)fare=80;
+if(km<=3)fare=80;
 else if(km<=5)fare=100;
 else if(km<=7)fare=120;
 else if(km<=9)fare=140;
@@ -764,17 +767,27 @@ const mensaje=
 `🗺️ Ubicación en Google Maps: ${mapas}\n`+
 `🎯 Destino: ${nombreDestino}\n`+
 `📏 Distancia: ${km.toFixed(1)} km\n`+
-`💬 Precio: cotiza y confirma con el chofer`;
+(zonaEspecial
+ ? `⚠️ Zona especial: precio a cotizar y confirmar con el chofer.`
+ : `💰 Tarifa estimada: $${fare} MXN`);
 
 document.getElementById("wa").href=
 `https://wa.me/527444490147?text=${encodeURIComponent(mensaje)}`;
 
-r.innerHTML=
-`<b>Destino:</b> ${escapeHtml(nombreDestino)}<br>`+
-`<b>Distancia:</b> ${km.toFixed(1)} km<br>`+
-`<div style="margin-top:10px;padding:12px;border-radius:8px;background:#fff3cd;color:#664d03;font-weight:700;">`+
-`💬 Cotiza y confirma el precio con el chofer antes de abordar.`+
-`</div>`;
+if(zonaEspecial){
+  r.innerHTML=
+  `<b>Destino:</b> ${escapeHtml(nombreDestino)}<br>`+
+  `<b>Distancia:</b> ${km.toFixed(1)} km<br>`+
+  `<div style="margin-top:10px;padding:12px;border-radius:8px;background:#fff3cd;color:#664d03;font-weight:700;">`+
+  `⚠️ <b>Zona especial</b><br>`+
+  `Aeropuerto, Barra Vieja y Barra de Coyuca: cotiza y confirma el precio con el chofer antes de abordar.`+
+  `</div>`;
+}else{
+  r.innerHTML=
+  `<b>Destino:</b> ${escapeHtml(nombreDestino)}<br>`+
+  `<b>Distancia:</b> ${km.toFixed(1)} km<br>`+
+  `<b>Tarifa estimada:</b> $${fare} MXN`;
+}
 
 }catch(e){
 console.error(e);
