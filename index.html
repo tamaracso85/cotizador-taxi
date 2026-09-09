@@ -27,6 +27,10 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <div id="estadoServicio" class="estado-error">⏳ Verificando disponibilidad del servicio...</div>
 <button class="btn" onclick="obtenerUbicacion()">📍 Usar mi ubicación</button>
 <div id="ubicacion" class="small">Aún no se ha obtenido tu ubicación.</div>
+
+<label>Si no puedes compartir tu ubicación, escribe tu origen:</label>
+<input id="origenManual" placeholder="Ej. Colonia Centro, Acapulco">
+
 <label>¿A dónde quieres ir?</label>
 <input id="destino" placeholder="Ej. Zócalo de Acapulco">
 <button id="btnCotizar" class="btn" onclick="cotizar()" disabled>💰 Calcular tarifa</button>
@@ -83,11 +87,21 @@ console.warn("Supabase no respondió; se activó el modo de respaldo.",error);
 verificarServicio();
 
 function obtenerUbicacion(){
-if(!navigator.geolocation){alert("Tu navegador no permite obtener la ubicación.");return;}
+if(!navigator.geolocation){
+alert("Tu navegador no permite obtener la ubicación. Escribe tu origen manualmente.");
+return;
+}
 navigator.geolocation.getCurrentPosition(
-p=>{pos={lat:p.coords.latitude,lon:p.coords.longitude};
-document.getElementById("ubicacion").textContent="✅ Ubicación obtenida correctamente.";},
-e=>alert("No se pudo obtener la ubicación. Activa el permiso de ubicación del navegador."),
+p=>{
+pos={lat:p.coords.latitude,lon:p.coords.longitude};
+document.getElementById("ubicacion").textContent="✅ Ubicación obtenida correctamente.";
+},
+e=>{
+console.warn("Geolocalización:",e);
+document.getElementById("ubicacion").textContent=
+"⚠️ No fue posible obtener el GPS. Puedes escribir tu origen manualmente.";
+alert("No se pudo obtener la ubicación. Si el navegador bloquea el GPS, escribe tu origen en el campo de origen.");
+},
 {enableHighAccuracy:true,timeout:30000,maximumAge:0});
 }
 const destinosConocidos = {
@@ -96,7 +110,11 @@ const destinosConocidos = {
 "hotel ritz": {lat:16.8506, lon:-99.9069, nombre:"Hotel Ritz Acapulco"},
 "zocalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
 "zócalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
-"aeropuerto": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"}
+"aeropuerto": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
+"aeropuerto acapulco": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
+"aca": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
+"calle 5 y emiliano zapata bella vista": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+"calle 5 y emiliano zapata col bella vista": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"}
 };
 function normalizarTexto(t){
 return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
@@ -112,7 +130,14 @@ async function buscarDestino(destino){
   for(const k of Object.keys(destinosConocidos)){
     const clave = normalizarTexto(k);
 
-    if(normalizado === clave || normalizado.includes(clave)){
+    if(normalizado === clave){
+      return destinosConocidos[k];
+    }
+  }
+
+  for(const k of Object.keys(destinosConocidos).sort((a,b)=>b.length-a.length)){
+    const clave = normalizarTexto(k);
+    if(clave.length >= 12 && normalizado.includes(clave)){
       return destinosConocidos[k];
     }
   }
@@ -127,6 +152,7 @@ async function buscarDestino(destino){
   function limpiarNombre(valor){
     return valor
       .replace(/\b(acapulco|guerrero|mexico|méxico)\b/gi,"")
+      .replace(/\b(col|colonia|fracc|fraccionamiento)\b.*$/gi,"")
       .replace(/\b(esquina\s+con|esquina|con|y)\b/gi," ")
       .replace(/\b(av|ave|avenida|calle|c)\.?\b/gi," ")
       .replace(/\s+/g," ")
@@ -185,7 +211,7 @@ async function buscarCruce(calle1, calle2){
 
         const palabras = normalizar(texto)
             .split(" ")
-            .filter(p => p.length >= 4);
+            .filter(p => p.length >= 2 || /^\\d+$/.test(p));
 
         return palabras
             .map(p => p.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"))
@@ -262,7 +288,7 @@ out body geom;
             const coincide1 =
                 normalizar(calle1)
                     .split(" ")
-                    .filter(p => p.length >= 4)
+                    .filter(p => p.length >= 2 || /^\d+$/.test(p))
                     .every(p =>
                         nombre.includes(p)
                     );
@@ -270,7 +296,7 @@ out body geom;
             const coincide2 =
                 normalizar(calle2)
                     .split(" ")
-                    .filter(p => p.length >= 4)
+                    .filter(p => p.length >= 2 || /^\d+$/.test(p))
                     .every(p =>
                         nombre.includes(p)
                     );
@@ -449,45 +475,96 @@ if(!servicioActivo){
 alert("El servicio no está disponible en este momento.");
 return;
 }
+
 const destino=document.getElementById("destino").value.trim();
-if(!pos){alert("Primero pulsa «Usar mi ubicación».");return;}
-if(!destino){alert("Escribe tu destino.");return;}
+const origenManual=document.getElementById("origenManual").value.trim();
+
+if(!pos && !origenManual){
+alert("Primero usa tu ubicación o escribe tu origen manualmente.");
+return;
+}
+if(!destino){
+alert("Escribe tu destino.");
+return;
+}
+
 const r=document.getElementById("resultado");
-r.textContent="Buscando destino...";
+r.textContent="Preparando origen...";
+
 try{
+let origen=pos;
+
+if(!origen){
+const o=await buscarDestino(origenManual);
+if(!o) throw new Error("Origen no encontrado");
+origen={lat:o.lat,lon:o.lon};
+document.getElementById("ubicacion").textContent="✅ Origen localizado correctamente.";
+}
+
+r.textContent="Buscando destino...";
 const g=await buscarDestino(destino);
 if(!g) throw new Error("Destino no encontrado");
+
 r.textContent="Calculando ruta...";
-const route=await fetch(`https://router.project-osrm.org/route/v1/driving/${pos.lon},${pos.lat};${g.lon},${g.lat}?overview=false`).then(x=>x.json());
+const route=await fetch(
+`https://router.project-osrm.org/route/v1/driving/${origen.lon},${origen.lat};${g.lon},${g.lat}?overview=false`
+).then(x=>x.json());
+
 if(!route.routes || !route.routes.length) throw new Error("Ruta no encontrada");
+
 const km=route.routes[0].distance/1000;
 const airport=/aeropuerto|acapulco international|ACA\b/i.test(destino);
+
 let fare;
 if(airport){fare=Math.max(300,Math.round(km*20/10)*10);}
-else if(km<=3)fare=85;
-else if(km<=5)fare=95;
-else if(km<=7)fare=115;
-else if(km<=9)fare=135;
-else if(km<=11)fare=145;
-else if(km<=13)fare=165;
-else if(km<=15)fare=185;
-else if(km<=18)fare=215;
-else if(km<=21)fare=255;
-else if(km<=24)fare=295;
-else if(km<=27)fare=335;
-else if(km<=30)fare=395;
-else if(km<=35)fare=465;
-else if(km<=40)fare=535;
-else if(km<=45)fare=615;
-else fare=715;
-const nombreDestino = g.nombre || destino;
-const mapas = `https://www.google.com/maps?q=${pos.lat},${pos.lon}`;
-const mensaje = `🚕 Solicitud de taxi\n\n📍 Mi ubicación: ${pos.lat.toFixed(6)}, ${pos.lon.toFixed(6)}\n🗺️ Ubicación en Google Maps: ${mapas}\n🎯 Destino: ${nombreDestino}\n📏 Distancia: ${km.toFixed(1)} km\n💰 Tarifa estimada: $${fare} MXN`;
-document.getElementById("wa").href = `https://wa.me/527444490147?text=${encodeURIComponent(mensaje)}`;
-r.innerHTML=`<b>Destino:</b> ${nombreDestino}<br><b>Distancia:</b> ${km.toFixed(1)} km<br><b>Tarifa estimada:</b> $${fare} MXN${airport?"<br><span class='small'>Aeropuerto: tarifa especial provisional</span>":""}`;
+else if(km<=3)fare=70;
+else if(km<=5)fare=80;
+else if(km<=7)fare=100;
+else if(km<=9)fare=120;
+else if(km<=11)fare=130;
+else if(km<=13)fare=150;
+else if(km<=15)fare=170;
+else if(km<=18)fare=200;
+else if(km<=21)fare=240;
+else if(km<=24)fare=280;
+else if(km<=27)fare=320;
+else if(km<=30)fare=380;
+else if(km<=35)fare=450;
+else if(km<=40)fare=520;
+else if(km<=45)fare=600;
+else fare=700;
+
+const nombreDestino=g.nombre || destino;
+const mapas=`https://www.google.com/maps?q=${origen.lat},${origen.lon}`;
+
+const mensaje=
+`🚕 Solicitud de taxi\n\n`+
+`📍 Mi ubicación: ${origen.lat.toFixed(6)}, ${origen.lon.toFixed(6)}\n`+
+`🗺️ Ubicación en Google Maps: ${mapas}\n`+
+`🎯 Destino: ${nombreDestino}\n`+
+`📏 Distancia: ${km.toFixed(1)} km\n`+
+`💰 Tarifa estimada: $${fare} MXN`;
+
+document.getElementById("wa").href=
+`https://wa.me/527444490147?text=${encodeURIComponent(mensaje)}`;
+
+r.innerHTML=
+`<b>Destino:</b> ${escapeHtml(nombreDestino)}<br>`+
+`<b>Distancia:</b> ${km.toFixed(1)} km<br>`+
+`<b>Tarifa estimada:</b> $${fare} MXN`+
+(airport?`<br><span class='small'>Aeropuerto: tarifa especial provisional</span>`:"");
+
 }catch(e){
-r.textContent="No encontramos ese destino. Prueba con el nombre del lugar y agrega «Acapulco».";
+console.error(e);
+r.textContent=
+"No encontramos el origen o destino. Revisa el texto e intenta nuevamente.";
 }
+}
+
+function escapeHtml(text){
+return String(text).replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+}[c]));
 }
 </script>
 </body>
