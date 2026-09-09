@@ -105,35 +105,186 @@ alert("No se pudo obtener la ubicación. Si el navegador bloquea el GPS, escribe
 {enableHighAccuracy:true,timeout:30000,maximumAge:0});
 }
 const destinosConocidos = {
-"la gran plaza": {lat:16.861473, lon:-99.881912, nombre:"La Gran Plaza Acapulco"},
-"gran plaza": {lat:16.861473, lon:-99.881912, nombre:"La Gran Plaza Acapulco"},
-"hotel ritz": {lat:16.8506, lon:-99.9069, nombre:"Hotel Ritz Acapulco"},
-"zocalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
-"zócalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
-"aeropuerto": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
-"aeropuerto acapulco": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
-"aca": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
-"calle 5 y emiliano zapata bella vista": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
-"calle 5 y emiliano zapata col bella vista": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
-"calle 5 y av emiliano zapata": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
-"calle 5 y av zapata": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
-"av emiliano zapata y calle 5": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
-"av zapata y calle 5": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
-"iglesia del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
-"iglesia carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
-"parroquia del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
-"parroquia nuestra senora del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
-"nuestra senora del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
-"templo del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
-"iglesia de piedra": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"}
+  "la gran plaza": {lat:16.861473, lon:-99.881912, nombre:"La Gran Plaza Acapulco"},
+  "gran plaza": {lat:16.861473, lon:-99.881912, nombre:"La Gran Plaza Acapulco"},
+  "hotel ritz": {lat:16.8506, lon:-99.9069, nombre:"Hotel Ritz Acapulco"},
+  "zocalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
+  "zócalo": {lat:16.8493, lon:-99.9081, nombre:"Zócalo de Acapulco"},
+  "aeropuerto": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
+  "aeropuerto acapulco": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
+  "aca": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
+
+  "calle 5 y emiliano zapata bella vista": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+  "calle 5 y emiliano zapata col bella vista": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+  "calle 5 y av emiliano zapata": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+  "calle 5 y av zapata": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+  "av emiliano zapata y calle 5": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+  "av zapata y calle 5": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+
+  "iglesia del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+  "iglesia carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+  "parroquia del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+  "parroquia nuestra senora del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+  "nuestra senora del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+  "templo del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+  "iglesia de piedra": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+
+  "iglesia de costa azul": {lat:16.835889, lon:-99.907669, nombre:"Parroquia del Sagrado Corazón de Jesús, Costa Azul"},
+  "iglesia costa azul": {lat:16.835889, lon:-99.907669, nombre:"Parroquia del Sagrado Corazón de Jesús, Costa Azul"},
+  "iglesia de la costa azul": {lat:16.835889, lon:-99.907669, nombre:"Parroquia del Sagrado Corazón de Jesús, Costa Azul"},
+  "iglesia sagrado corazon costa azul": {lat:16.835889, lon:-99.907669, nombre:"Parroquia del Sagrado Corazón de Jesús, Costa Azul"},
+  "sagrado corazon costa azul": {lat:16.835889, lon:-99.907669, nombre:"Parroquia del Sagrado Corazón de Jesús, Costa Azul"},
+
+  "gasolinera modelo": {lat:16.85386734, lon:-99.906019, nombre:"Gasolinera Modelo, Centro"},
+  "gasolinera la modelo": {lat:16.85386734, lon:-99.906019, nombre:"Gasolinera Modelo, Centro"},
+  "la modelo": {lat:16.85386734, lon:-99.906019, nombre:"Gasolinera Modelo, Centro"},
+  "modelo gasolinera": {lat:16.85386734, lon:-99.906019, nombre:"Gasolinera Modelo, Centro"},
+
+  "soriana costera": {query:"Soriana Acapulco Costera, Acapulco, Guerrero, México", nombre:"Soriana Acapulco Costera"},
+  "soriana acapulco costera": {query:"Soriana Acapulco Costera, Acapulco, Guerrero, México", nombre:"Soriana Acapulco Costera"},
+  "soriana de la costera": {query:"Soriana Acapulco Costera, Acapulco, Guerrero, México", nombre:"Soriana Acapulco Costera"},
+  "soriana costera miguel aleman": {query:"Soriana Acapulco Costera, Acapulco, Guerrero, México", nombre:"Soriana Acapulco Costera"},
+
+  "hospital del pacifico": {query:"Hospital del Pacífico, Lomas de Magallanes, Acapulco, Guerrero, México", nombre:"Hospital del Pacífico"},
+  "hospital pacifico": {query:"Hospital del Pacífico, Lomas de Magallanes, Acapulco, Guerrero, México", nombre:"Hospital del Pacífico"},
+  "hospital del pacifico acapulco": {query:"Hospital del Pacífico, Lomas de Magallanes, Acapulco, Guerrero, México", nombre:"Hospital del Pacífico"},
+
+  "edificio inteligente": {query:"Edificio Inteligente, Acapulco, Guerrero, México", nombre:"Edificio Inteligente / Centro Estatal de Servicios"},
+  "el edificio inteligente": {query:"Edificio Inteligente, Acapulco, Guerrero, México", nombre:"Edificio Inteligente / Centro Estatal de Servicios"},
+  "centro estatal de servicios": {query:"Centro Estatal de Servicios, Acapulco, Guerrero, México", nombre:"Centro Estatal de Servicios"},
+  "ces": {query:"Centro Estatal de Servicios, Acapulco, Guerrero, México", nombre:"Centro Estatal de Servicios"},
+
+  "fideicomiso acapulco": {query:"Fideicomiso Acapulco FIDACA, Andrés de Urdaneta 28, Acapulco, Guerrero, México", nombre:"Fideicomiso Acapulco (FIDACA)"},
+  "fidaca": {query:"Fideicomiso Acapulco FIDACA, Andrés de Urdaneta 28, Acapulco, Guerrero, México", nombre:"Fideicomiso Acapulco (FIDACA)"},
+  "fideicomiso de acapulco": {query:"Fideicomiso Acapulco FIDACA, Andrés de Urdaneta 28, Acapulco, Guerrero, México", nombre:"Fideicomiso Acapulco (FIDACA)"},
+  "fideicomiso para el desarrollo economico y social de acapulco": {query:"Fideicomiso Acapulco FIDACA, Andrés de Urdaneta 28, Acapulco, Guerrero, México", nombre:"Fideicomiso Acapulco (FIDACA)"},
+
+  "colegio hipocrates": {query:"Colegio Hipócrates, Andrés de Urdaneta, Acapulco, Guerrero, México", nombre:"Colegio Hipócrates"},
+  "universidad hipocrates": {query:"Universidad Hipócrates, Andrés de Urdaneta, Acapulco, Guerrero, México", nombre:"Universidad Hipócrates"},
+  "hipocrates": {query:"Universidad Hipócrates, Acapulco, Guerrero, México", nombre:"Universidad Hipócrates"},
+
+  "escuela de medicina": {query:"Facultad de Medicina UAGro, Acapulco, Guerrero, México", nombre:"Facultad de Medicina UAGro"},
+  "facultad de medicina": {query:"Facultad de Medicina UAGro, Acapulco, Guerrero, México", nombre:"Facultad de Medicina UAGro"},
+  "facultad de medicina uagro": {query:"Facultad de Medicina UAGro, Acapulco, Guerrero, México", nombre:"Facultad de Medicina UAGro"},
+  "medicina uagro": {query:"Facultad de Medicina UAGro, Acapulco, Guerrero, México", nombre:"Facultad de Medicina UAGro"},
+
+  "oficinas de transito": {query:"Oficinas de Tránsito Policía Vial Acapulco, Parque Papagayo, Acapulco, Guerrero, México", nombre:"Oficinas de Tránsito / Policía Vial de Acapulco"},
+  "oficinas de transito acapulco": {query:"Oficinas de Tránsito Policía Vial Acapulco, Parque Papagayo, Acapulco, Guerrero, México", nombre:"Oficinas de Tránsito / Policía Vial de Acapulco"},
+  "transito": {query:"Oficinas de Tránsito Policía Vial Acapulco, Parque Papagayo, Acapulco, Guerrero, México", nombre:"Oficinas de Tránsito / Policía Vial de Acapulco"},
+
+  "firestone": {query:"Firestone Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Firestone / Hiperllantas Cuauhtémoc"},
+  "fireston": {query:"Firestone Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Firestone / Hiperllantas Cuauhtémoc"},
+  "firestone cuauhtemoc": {query:"Firestone Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Firestone / Hiperllantas Cuauhtémoc"},
+  "fireston cuauhtemoc": {query:"Firestone Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Firestone / Hiperllantas Cuauhtémoc"},
+  "firestone y cuauhtemoc": {query:"Firestone Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Firestone / Hiperllantas Cuauhtémoc"},
+
+  "parada del vaquero": {query:"Parada del Vaquero, Avenida Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Parada del Vaquero"},
+  "parada vaquero": {query:"Parada del Vaquero, Avenida Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Parada del Vaquero"},
+  "el vaquero": {query:"Parada del Vaquero, Avenida Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Parada del Vaquero"},
+  "vaquero": {query:"Parada del Vaquero, Avenida Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Parada del Vaquero"},
+  "vaquero norteno": {query:"Parada del Vaquero, Avenida Cuauhtémoc, Acapulco, Guerrero, México", nombre:"Parada del Vaquero"},
+
+  "museo del fuerte de san diego": {lat:16.85015, lon:-99.90238, nombre:"Museo Histórico de Acapulco Fuerte de San Diego"},
+  "museo fuerte de san diego": {lat:16.85015, lon:-99.90238, nombre:"Museo Histórico de Acapulco Fuerte de San Diego"},
+  "fuerte de san diego": {lat:16.85015, lon:-99.90238, nombre:"Museo Histórico de Acapulco Fuerte de San Diego"},
+  "museo san diego": {lat:16.85015, lon:-99.90238, nombre:"Museo Histórico de Acapulco Fuerte de San Diego"},
+  "el fuerte": {lat:16.85015, lon:-99.90238, nombre:"Museo Histórico de Acapulco Fuerte de San Diego"},
+
+  "restaurant siroco": {query:"Sirocco Restaurant & Tapas Bar, Avenida Escénica 120, Acapulco, Guerrero, México", nombre:"Sirocco Restaurant & Tapas Bar"},
+  "restaurante siroco": {query:"Sirocco Restaurant & Tapas Bar, Avenida Escénica 120, Acapulco, Guerrero, México", nombre:"Sirocco Restaurant & Tapas Bar"},
+  "siroco": {query:"Sirocco Restaurant & Tapas Bar, Avenida Escénica 120, Acapulco, Guerrero, México", nombre:"Sirocco Restaurant & Tapas Bar"},
+  "sirocco": {query:"Sirocco Restaurant & Tapas Bar, Avenida Escénica 120, Acapulco, Guerrero, México", nombre:"Sirocco Restaurant & Tapas Bar"},
+  "restaurante el siroco": {query:"Sirocco Restaurant & Tapas Bar, Avenida Escénica 120, Acapulco, Guerrero, México", nombre:"Sirocco Restaurant & Tapas Bar"},
+  "el siroco": {query:"Sirocco Restaurant & Tapas Bar, Avenida Escénica 120, Acapulco, Guerrero, México", nombre:"Sirocco Restaurant & Tapas Bar"},
+
+  "restaurant bora bora": {query:"Bora Bora Las Brisas, Acapulco, Guerrero, México", nombre:"Bora Bora - Las Brisas"},
+  "restaurante bora bora": {query:"Bora Bora Las Brisas, Acapulco, Guerrero, México", nombre:"Bora Bora - Las Brisas"},
+  "bora bora": {query:"Bora Bora Las Brisas, Acapulco, Guerrero, México", nombre:"Bora Bora - Las Brisas"},
+  "bora-bora": {query:"Bora Bora Las Brisas, Acapulco, Guerrero, México", nombre:"Bora Bora - Las Brisas"},
+  "restaurante borabora": {query:"Bora Bora Las Brisas, Acapulco, Guerrero, México", nombre:"Bora Bora - Las Brisas"},
+
+  "yate dinka": {query:"Yates Dinka, Muelle Parque de la Reina, Acapulco, Guerrero, México", nombre:"Yates Dinka"},
+  "yates dinka": {query:"Yates Dinka, Muelle Parque de la Reina, Acapulco, Guerrero, México", nombre:"Yates Dinka"},
+  "dinka": {query:"Yates Dinka, Muelle Parque de la Reina, Acapulco, Guerrero, México", nombre:"Yates Dinka"},
+
+  "yate bonanza": {query:"Yate Bonanza, Muelle Parque de la Reina, Acapulco, Guerrero, México", nombre:"Yate Bonanza"},
+  "yates bonanza": {query:"Yate Bonanza, Muelle Parque de la Reina, Acapulco, Guerrero, México", nombre:"Yate Bonanza"},
+  "bonanza": {query:"Yate Bonanza, Muelle Parque de la Reina, Acapulco, Guerrero, México", nombre:"Yate Bonanza"},
+  "yate fiesta bonanza": {query:"Yate Bonanza, Muelle Parque de la Reina, Acapulco, Guerrero, México", nombre:"Yate Bonanza"},
+
+  "chedraui pie de la cuesta": {query:"Chedraui Acapulco Pie de la Cuesta, Calzada Pie de la Cuesta 239, Acapulco, Guerrero, México", nombre:"Chedraui Acapulco Pie de la Cuesta"},
+  "chedraui pie": {query:"Chedraui Acapulco Pie de la Cuesta, Calzada Pie de la Cuesta 239, Acapulco, Guerrero, México", nombre:"Chedraui Acapulco Pie de la Cuesta"},
+  "chedraui de pie de la cuesta": {query:"Chedraui Acapulco Pie de la Cuesta, Calzada Pie de la Cuesta 239, Acapulco, Guerrero, México", nombre:"Chedraui Acapulco Pie de la Cuesta"},
+  "el chedraui de pie de la cuesta": {query:"Chedraui Acapulco Pie de la Cuesta, Calzada Pie de la Cuesta 239, Acapulco, Guerrero, México", nombre:"Chedraui Acapulco Pie de la Cuesta"},
+  "chedraui calzada pie de la cuesta": {query:"Chedraui Acapulco Pie de la Cuesta, Calzada Pie de la Cuesta 239, Acapulco, Guerrero, México", nombre:"Chedraui Acapulco Pie de la Cuesta"},
+
+  "condominio la cima escenica": {query:"Condominio La Cima, Avenida Escénica, Acapulco, Guerrero, México", nombre:"Condominio La Cima Escénica"},
+  "condominio la cima": {query:"Condominio La Cima, Avenida Escénica, Acapulco, Guerrero, México", nombre:"Condominio La Cima Escénica"},
+  "la cima escenica": {query:"Condominio La Cima, Avenida Escénica, Acapulco, Guerrero, México", nombre:"Condominio La Cima Escénica"},
+  "la cima": {query:"Condominio La Cima, Avenida Escénica, Acapulco, Guerrero, México", nombre:"Condominio La Cima Escénica"},
+  "la cima club residencial": {query:"La Cima Club Residencial, Avenida Escénica, Acapulco, Guerrero, México", nombre:"La Cima Club Residencial"},
+  "fraccionamiento la cima": {query:"Fraccionamiento La Cima, Avenida Escénica, Acapulco, Guerrero, México", nombre:"Fraccionamiento La Cima"},
+
+  "balcones al mar": {query:"Balcones al Mar, Acapulco, Guerrero, México", nombre:"Colonia Balcones al Mar"}
 };
+
 function normalizarTexto(t){
 return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
 }
+async function buscarNominatimCanonico(consulta, nombrePreferido){
+  try{
+    const url =
+      "https://nominatim.openstreetmap.org/search" +
+      "?format=jsonv2&limit=8&countrycodes=mx&accept-language=es&q=" +
+      encodeURIComponent(consulta);
+
+    const respuesta = await fetch(url);
+    if(!respuesta.ok) return null;
+
+    const resultados = await respuesta.json();
+    if(!resultados.length) return null;
+
+    const candidatos = resultados.filter(x =>
+      /Acapulco|Guerrero/i.test(
+        (x.display_name || "") + " " +
+        (x.address?.city || "") + " " +
+        (x.address?.town || "") + " " +
+        (x.address?.municipality || "") + " " +
+        (x.address?.suburb || "") + " " +
+        (x.address?.neighbourhood || "")
+      )
+    );
+
+    const mejor = candidatos[0] || resultados[0];
+    return {
+      lat:Number(mejor.lat),
+      lon:Number(mejor.lon),
+      nombre:nombrePreferido || mejor.display_name || consulta
+    };
+  }catch(error){
+    console.warn("Error en búsqueda canónica:", error);
+    return null;
+  }
+}
+
 async function buscarDestino(destino){
 
   const texto = destino.trim();
   const normalizado = normalizarTexto(texto);
+
+  // Si es un destino conocido con coordenadas, usar el punto directo.
+  // Si es un destino conocido por nombre popular/oficial, resolver su consulta canónica.
+  const conocido = destinosConocidos[normalizado];
+  if(conocido){
+    if(typeof conocido.lat === "number" && typeof conocido.lon === "number"){
+      return conocido;
+    }
+    if(conocido.query){
+      const res = await buscarNominatimCanonico(conocido.query, conocido.nombre);
+      if(res) return res;
+    }
+  }
+
 
   // ==============================
   // DESTINOS CONOCIDOS
@@ -166,9 +317,9 @@ async function buscarDestino(destino){
 
   // Variantes naturales del mismo cruce, incluso "Av. Zapata".
   const esCruceCalle5Zapata =
-    /\\bcalle\\s*5\\b/.test(normalizado) &&
-    /\\bzapata\\b/.test(normalizado) &&
-    /\\b(y|con|esquina)\\b/.test(normalizado);
+    /\bcalle\s*5\b/.test(normalizado) &&
+    /\bzapata\b/.test(normalizado) &&
+    /\b(y|con|esquina)\b/.test(normalizado);
 
   if(esCruceCalle5Zapata){
     return destinosConocidos["calle 5 y av zapata"];
@@ -415,6 +566,44 @@ out body geom;
   }
 
   // ==============================
+  // CALLE + COLONIA
+  // ==============================
+  // No buscar solamente la calle. Primero obligamos a que la consulta
+  // conserve la colonia para evitar confundir calles con el mismo nombre.
+  const patronCalleColonia =
+    /^(?:calle|c\.?|av\.?|ave\.?|avenida)\s+(.+?)\s+(?:col\.?|colonia)\s+(.+)$/i;
+
+  const calleColonia = texto.match(patronCalleColonia);
+
+  if(calleColonia){
+    const nombreCalle = calleColonia[1].trim();
+    const nombreColonia = calleColonia[2].trim();
+
+    const consultasCalleColonia = [
+      `${nombreCalle}, ${nombreColonia}, Acapulco, Guerrero, México`,
+      `Calle ${nombreCalle}, ${nombreColonia}, Acapulco, Guerrero, México`,
+      `${nombreCalle} ${nombreColonia}, Acapulco, Guerrero, México`
+    ];
+
+    for(const consultaCC of consultasCalleColonia){
+      const resultadoCC = await buscarNominatimCanonico(
+        consultaCC,
+        `Calle ${nombreCalle}, Col. ${nombreColonia}, Acapulco`
+      );
+      if(resultadoCC){
+        return resultadoCC;
+      }
+    }
+  }
+
+  // ==============================
+  // EVITAR RESULTADOS GENÉRICOS PELIGROSOS
+  // ==============================
+  if(normalizado === "gasolinera" || normalizado === "chedraui"){
+    throw new Error("Destino ambiguo: especifica cuál.");
+  }
+
+  // ==============================
   // BÚSQUEDA NORMAL
   // ==============================
 
@@ -545,26 +734,26 @@ const route=await fetch(
 if(!route.routes || !route.routes.length) throw new Error("Ruta no encontrada");
 
 const km=route.routes[0].distance/1000;
-const airport=/aeropuerto|acapulco international|ACA\b/i.test(destino);
+const airport=/aeropuerto|acapulco international|\baca\b/i.test(destino);
 
 let fare;
 if(airport){fare=Math.max(300,Math.round(km*20/10)*10);}
 else if(km<=3)fare=80;
-else if(km<=5)fare=80;
-else if(km<=7)fare=100;
-else if(km<=9)fare=120;
-else if(km<=11)fare=130;
-else if(km<=13)fare=150;
-else if(km<=15)fare=170;
-else if(km<=18)fare=200;
-else if(km<=21)fare=240;
-else if(km<=24)fare=280;
+else if(km<=5)fare=100;
+else if(km<=7)fare=120;
+else if(km<=9)fare=140;
+else if(km<=11)fare=160;
+else if(km<=13)fare=180;
+else if(km<=15)fare=200;
+else if(km<=18)fare=230;
+else if(km<=21)fare=260;
+else if(km<=24)fare=290;
 else if(km<=27)fare=320;
-else if(km<=30)fare=380;
-else if(km<=35)fare=450;
-else if(km<=40)fare=520;
-else if(km<=45)fare=600;
-else fare=700;
+else if(km<=30)fare=350;
+else if(km<=35)fare=400;
+else if(km<=40)fare=450;
+else if(km<=45)fare=500;
+else fare=550;
 
 const nombreDestino=g.nombre || destino;
 const mapas=`https://www.google.com/maps?q=${origen.lat},${origen.lon}`;
@@ -575,7 +764,7 @@ const mensaje=
 `🗺️ Ubicación en Google Maps: ${mapas}\n`+
 `🎯 Destino: ${nombreDestino}\n`+
 `📏 Distancia: ${km.toFixed(1)} km\n`+
-`💰 Tarifa estimada: $${fare} MXN`;
+`💬 Precio: cotiza y confirma con el chofer`;
 
 document.getElementById("wa").href=
 `https://wa.me/527444490147?text=${encodeURIComponent(mensaje)}`;
@@ -583,8 +772,9 @@ document.getElementById("wa").href=
 r.innerHTML=
 `<b>Destino:</b> ${escapeHtml(nombreDestino)}<br>`+
 `<b>Distancia:</b> ${km.toFixed(1)} km<br>`+
-`<b>Tarifa estimada:</b> $${fare} MXN`+
-(airport?`<br><span class='small'>Aeropuerto: tarifa especial provisional</span>`:"");
+`<div style="margin-top:10px;padding:12px;border-radius:8px;background:#fff3cd;color:#664d03;font-weight:700;">`+
+`💬 Cotiza y confirma el precio con el chofer antes de abordar.`+
+`</div>`;
 
 }catch(e){
 console.error(e);
