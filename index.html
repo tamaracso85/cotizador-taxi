@@ -114,7 +114,18 @@ const destinosConocidos = {
 "aeropuerto acapulco": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
 "aca": {lat:16.7571, lon:-99.7537, nombre:"Aeropuerto Internacional de Acapulco"},
 "calle 5 y emiliano zapata bella vista": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
-"calle 5 y emiliano zapata col bella vista": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"}
+"calle 5 y emiliano zapata col bella vista": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+"calle 5 y av emiliano zapata": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+"calle 5 y av zapata": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+"av emiliano zapata y calle 5": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+"av zapata y calle 5": {lat:16.863372, lon:-99.907922, nombre:"Calle 5 y Av. Emiliano Zapata, Col. Bella Vista"},
+"iglesia del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+"iglesia carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+"parroquia del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+"parroquia nuestra senora del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+"nuestra senora del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+"templo del carmen": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"},
+"iglesia de piedra": {lat:16.8545583, lon:-99.9078944, nombre:"Parroquia Nuestra Señora del Carmen, Barrio del Hueso"}
 };
 function normalizarTexto(t){
 return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
@@ -151,6 +162,16 @@ async function buscarDestino(destino){
 
   if(esCalle5BellaVista){
     return destinosConocidos["calle 5 y emiliano zapata col bella vista"];
+  }
+
+  // Variantes naturales del mismo cruce, incluso "Av. Zapata".
+  const esCruceCalle5Zapata =
+    /\\bcalle\\s*5\\b/.test(normalizado) &&
+    /\\bzapata\\b/.test(normalizado) &&
+    /\\b(y|con|esquina)\\b/.test(normalizado);
+
+  if(esCruceCalle5Zapata){
+    return destinosConocidos["calle 5 y av zapata"];
   }
 
   // ==============================
