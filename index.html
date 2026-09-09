@@ -618,6 +618,14 @@ out body geom;
   // ==============================
   // EVITAR RESULTADOS GENÉRICOS PELIGROSOS
   // ==============================
+  // Una calle numerada sola NO debe resolverse automáticamente con Nominatim,
+  // porque puede existir en varias colonias. Por ejemplo, "Calle 5" no debe
+  // enviarse automáticamente a Ciudad Renacimiento. Pedimos colonia o cruce.
+  if(/^calle\s+\d+[a-z]?$/i.test(normalizado)){
+    throw new Error(`⚠️ ${texto}: hay varias calles con ese número en Acapulco.
+Escribe la colonia o el cruce, por ejemplo: "Calle 5, Col. Bella Vista" o "Calle 5 y Av. Emiliano Zapata".`);
+  }
+
   if(normalizado === "gasolinera" || normalizado === "chedraui"){
     throw new Error("Destino ambiguo: especifica cuál.");
   }
@@ -810,8 +818,7 @@ if(zonaEspecial){
 
 }catch(e){
 console.error(e);
-r.textContent=
-"No encontramos el origen o destino. Revisa el texto e intenta nuevamente.";
+r.innerHTML=escapeHtml(e?.message || "No encontramos el origen o destino. Revisa el texto e intenta nuevamente.").replace(/\n/g,"<br>");
 }
 }
 
