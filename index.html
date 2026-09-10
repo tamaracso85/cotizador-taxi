@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cotizador Taxi Acapulco V14</title>
+<title>Cotizador Taxi Acapulco V15</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body{font-family:Arial,sans-serif;margin:0;background:#f3f4f6;color:#222}
@@ -24,7 +24,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <div class="card">
 <h1>🚕 Cotizador de Taxi</h1>
 <p>Acapulco, Guerrero</p>
-<p class="small">Versión V14</p>
+<p class="small">Versión V15</p>
 <div id="estadoServicio" class="estado-error">⏳ Verificando disponibilidad del servicio...</div>
 <button class="btn" onclick="obtenerUbicacion()">📍 Usar mi ubicación</button>
 <div id="ubicacion" class="small">Aún no se ha obtenido tu ubicación.</div>
@@ -273,7 +273,7 @@ const destinosConocidos = {
   "parque de la reina": {lat:16.84926, lon:-99.90112, nombre:"Parque de la Reina"},
 
   // ==============================
-  // V14 – PUNTOS Y ESCUELAS ACUMULADOS EN PRUEBAS
+  // V15 – PUNTOS Y ESCUELAS ACUMULADOS EN PRUEBAS
   // ==============================
   "asta bandera": {lat:16.859149, lon:-99.886947, nombre:"Asta Bandera de Acapulco"},
   "hasta bandera": {lat:16.859149, lon:-99.886947, nombre:"Asta Bandera de Acapulco"},
@@ -385,7 +385,41 @@ const destinosConocidos = {
   "club night bar 10": {query:"Bar 10, Acapulco, Guerrero, México", nombre:"Bar 10"},
   "club nigth bar 10": {query:"Bar 10, Acapulco, Guerrero, México", nombre:"Bar 10"},
   "club night tabu": {query:"Tabu, Acapulco, Guerrero, México", nombre:"Tabú"},
-  "club nigth tabu": {query:"Tabu, Acapulco, Guerrero, México", nombre:"Tabú"}
+  "club nigth tabu": {query:"Tabu, Acapulco, Guerrero, México", nombre:"Tabú"},
+
+  // V15 – Correcciones acumuladas de las pruebas V14
+  // Edificio Inteligente: referencia confirmada en Costera Miguel Alemán y Vía Rápida.
+  "edificio inteligente": {lat:16.857740, lon:-99.894378, nombre:"Edificio Inteligente / Centro Estatal de Servicios"},
+  "el edificio inteligente": {lat:16.857740, lon:-99.894378, nombre:"Edificio Inteligente / Centro Estatal de Servicios"},
+  "edificio inteligente costera": {lat:16.857740, lon:-99.894378, nombre:"Edificio Inteligente / Costera y Vía Rápida"},
+  "edificio inteligente via rapida": {lat:16.857740, lon:-99.894378, nombre:"Edificio Inteligente / Costera y Vía Rápida"},
+  "edificio inteligente vía rápida": {lat:16.857740, lon:-99.894378, nombre:"Edificio Inteligente / Costera y Vía Rápida"},
+
+  // Zona de Tolerancia: aceptar las formas habituales de referencia local.
+  "zona de tolerancia": {query:"Zona de Tolerancia, Acapulco, Guerrero, México", nombre:"Zona de Tolerancia de Acapulco"},
+  "zona tolerancia": {query:"Zona de Tolerancia, Acapulco, Guerrero, México", nombre:"Zona de Tolerancia de Acapulco"},
+  "ex zona de tolerancia": {query:"Zona de Tolerancia, Acapulco, Guerrero, México", nombre:"Ex-Zona de Tolerancia de Acapulco"},
+  "zona roja": {query:"Zona de Tolerancia, Acapulco, Guerrero, México", nombre:"Zona de Tolerancia de Acapulco"},
+  "zona roja acapulco": {query:"Zona de Tolerancia, Acapulco, Guerrero, México", nombre:"Zona de Tolerancia de Acapulco"},
+
+  // La Polar = Bodega Aurrera La Polar, Calzada Pie de la Cuesta 310, Hogar Moderno.
+  "la polar": {query:"Bodega Aurrera La Polar, Calzada Pie de la Cuesta 310, Hogar Moderno, Acapulco, Guerrero, México", nombre:"Bodega Aurrera La Polar"},
+  "bodega aurrera la polar": {query:"Bodega Aurrera La Polar, Calzada Pie de la Cuesta 310, Hogar Moderno, Acapulco, Guerrero, México", nombre:"Bodega Aurrera La Polar"},
+  "aurrera la polar": {query:"Bodega Aurrera La Polar, Calzada Pie de la Cuesta 310, Hogar Moderno, Acapulco, Guerrero, México", nombre:"Bodega Aurrera La Polar"},
+  "bodega la polar": {query:"Bodega Aurrera La Polar, Calzada Pie de la Cuesta 310, Hogar Moderno, Acapulco, Guerrero, México", nombre:"Bodega Aurrera La Polar"},
+
+  // Cruce real del Centro: 5 de Mayo y Francisco Javier Mina.
+  "5 de mayo y mina": {query:"5 de Mayo y Francisco Javier Mina, Centro, Acapulco, Guerrero, México", nombre:"5 de Mayo y Francisco Javier Mina, Centro"},
+  "5 de mayo y francisco javier mina": {query:"5 de Mayo y Francisco Javier Mina, Centro, Acapulco, Guerrero, México", nombre:"5 de Mayo y Francisco Javier Mina, Centro"},
+  "francisco javier mina y 5 de mayo": {query:"5 de Mayo y Francisco Javier Mina, Centro, Acapulco, Guerrero, México", nombre:"5 de Mayo y Francisco Javier Mina, Centro"},
+
+  // Punto de referencia del Centro.
+  "las 7 esquinas": {query:"Las 7 Esquinas, Centro, Acapulco, Guerrero, México", nombre:"Las 7 Esquinas, Centro"},
+  "las siete esquinas": {query:"Las 7 Esquinas, Centro, Acapulco, Guerrero, México", nombre:"Las 7 Esquinas, Centro"},
+
+  // Arena Coliseo, Dominguillo.
+  "arena coliseo": {query:"Arena Coliseo, Tadeo Arredondo Villanueva 7, Dominguillo, Acapulco, Guerrero, México", nombre:"Arena Coliseo"},
+  "arena coliseo acapulco": {query:"Arena Coliseo, Tadeo Arredondo Villanueva 7, Dominguillo, Acapulco, Guerrero, México", nombre:"Arena Coliseo"},
 
 };
 
@@ -531,6 +565,12 @@ async function buscarDestino(destino){
     const colonia = mCol[2].trim();
     const combinado = await buscarNominatimCanonico(`${calle}, ${colonia}, Acapulco, Guerrero, México`, `${calle}, Col. ${colonia}`);
     if(combinado) return combinado;
+  }
+
+  // Calle Mina existe en más de un sector de Acapulco.
+  // Si el usuario escribe solo "calle Mina", no debemos adivinar la colonia.
+  if(/^(?:calle\s+)?mina(?:\s+de\s+acapulco)?$/.test(normalizado)){
+    throw new Error("Calle Mina es ambigua en Acapulco. Indica la colonia, por ejemplo: Calle Mina, Centro, o proporciona un cruce.");
   }
 
   // ==============================
@@ -994,7 +1034,7 @@ const zonaEspecial =
 
 let fare;
 if(km<=3)fare=80;
-else if(km<=5)fare=100;
+else if(km<=5)fare=90;
 else if(km<=7)fare=120;
 else if(km<=9)fare=140;
 else if(km<=11)fare=160;
