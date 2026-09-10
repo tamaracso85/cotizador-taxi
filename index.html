@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cotizador Taxi Acapulco</title>
+<title>Cotizador Taxi Acapulco V14</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body{font-family:Arial,sans-serif;margin:0;background:#f3f4f6;color:#222}
@@ -24,6 +24,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <div class="card">
 <h1>🚕 Cotizador de Taxi</h1>
 <p>Acapulco, Guerrero</p>
+<p class="small">Versión V14</p>
 <div id="estadoServicio" class="estado-error">⏳ Verificando disponibilidad del servicio...</div>
 <button class="btn" onclick="obtenerUbicacion()">📍 Usar mi ubicación</button>
 <div id="ubicacion" class="small">Aún no se ha obtenido tu ubicación.</div>
@@ -269,7 +270,123 @@ const destinosConocidos = {
   "llave de agua": {query:"Llave de Agua, Calzada Acapulco-México, Acapulco, Guerrero, México", nombre:"La Llave de Agua"},
 
   // Parque de la Reina es el acceso terrestre para los yates.
-  "parque de la reina": {lat:16.84926, lon:-99.90112, nombre:"Parque de la Reina"}
+  "parque de la reina": {lat:16.84926, lon:-99.90112, nombre:"Parque de la Reina"},
+
+  // ==============================
+  // V14 – PUNTOS Y ESCUELAS ACUMULADOS EN PRUEBAS
+  // ==============================
+  "asta bandera": {lat:16.859149, lon:-99.886947, nombre:"Asta Bandera de Acapulco"},
+  "hasta bandera": {lat:16.859149, lon:-99.886947, nombre:"Asta Bandera de Acapulco"},
+  "asta de bandera": {lat:16.859149, lon:-99.886947, nombre:"Asta Bandera de Acapulco"},
+  "bandera": {lat:16.859149, lon:-99.886947, nombre:"Asta Bandera de Acapulco"},
+  "playa asta bandera": {lat:16.859149, lon:-99.886947, nombre:"Asta Bandera de Acapulco"},
+
+  "parque papagayo": {lat:16.86062, lon:-99.88732, nombre:"Parque Papagayo"},
+  "parque papagayo cuauhtemoc": {lat:16.86062, lon:-99.88732, nombre:"Parque Papagayo"},
+  "parque papagayo costera": {lat:16.86062, lon:-99.88732, nombre:"Parque Papagayo"},
+  "parque papagayo avenida cuauhtemoc": {lat:16.86062, lon:-99.88732, nombre:"Parque Papagayo"},
+  "parque papagayo av cuauhtemoc": {lat:16.86062, lon:-99.88732, nombre:"Parque Papagayo"},
+
+  "la quebrada": {lat:16.845241, lon:-99.915333, nombre:"La Quebrada de Acapulco"},
+  "la quebrada acapulco": {lat:16.845241, lon:-99.915333, nombre:"La Quebrada de Acapulco"},
+  "clavadistas de la quebrada": {lat:16.845241, lon:-99.915333, nombre:"La Quebrada de Acapulco"},
+  "clavadistas la quebrada": {lat:16.845241, lon:-99.915333, nombre:"La Quebrada de Acapulco"},
+
+  "centro comercial la isla": {lat:16.78436, lon:-99.790832, nombre:"La Isla Acapulco Shopping Village"},
+  "la isla acapulco": {lat:16.78436, lon:-99.790832, nombre:"La Isla Acapulco Shopping Village"},
+  "la isla shopping village": {lat:16.78436, lon:-99.790832, nombre:"La Isla Acapulco Shopping Village"},
+  "la isla": {lat:16.78436, lon:-99.790832, nombre:"La Isla Acapulco Shopping Village"},
+
+  // Escuelas secundarias generales/federales probadas.
+  "secundaria federal 2": {query:"Escuela Secundaria Federal No. 2 Jesús Mastache Román, Avenida Reforma y Madero, Colonia Morelos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Federal No. 2 Jesús Mastache Román"},
+  "federal 2": {query:"Escuela Secundaria Federal No. 2 Jesús Mastache Román, Avenida Reforma y Madero, Colonia Morelos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Federal No. 2 Jesús Mastache Román"},
+  "sec 2": {query:"Escuela Secundaria Federal No. 2 Jesús Mastache Román, Avenida Reforma y Madero, Colonia Morelos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Federal No. 2 Jesús Mastache Román"},
+  "escuela secundaria federal 2": {query:"Escuela Secundaria Federal No. 2 Jesús Mastache Román, Avenida Reforma y Madero, Colonia Morelos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Federal No. 2 Jesús Mastache Román"},
+  "jesus mastache roman": {query:"Escuela Secundaria Federal No. 2 Jesús Mastache Román, Avenida Reforma y Madero, Colonia Morelos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Federal No. 2 Jesús Mastache Román"},
+
+  "secundaria federal 4": {query:"Escuela Secundaria Federal 4, Calle 5, Colonia Bella Vista, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Federal 4, Bella Vista"},
+  "federal 4": {query:"Escuela Secundaria Federal 4, Calle 5, Colonia Bella Vista, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Federal 4, Bella Vista"},
+  "sec 4": {query:"Escuela Secundaria Federal 4, Calle 5, Colonia Bella Vista, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Federal 4, Bella Vista"},
+  "escuela secundaria federal 4": {query:"Escuela Secundaria Federal 4, Calle 5, Colonia Bella Vista, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Federal 4, Bella Vista"},
+
+  // Secundarias técnicas públicas de Acapulco. Se consulta el nombre exacto
+  // para evitar que Nominatim sustituya la escuela por otra institución.
+  "secundaria tecnica 1": {query:"Escuela Secundaria Técnica Num. 1 Juan de Dios Bátiz, Avenida Adolfo Ruiz Cortines, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 1 Juan de Dios Bátiz"},
+  "tecnica 1": {query:"Escuela Secundaria Técnica Num. 1 Juan de Dios Bátiz, Avenida Adolfo Ruiz Cortines, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 1 Juan de Dios Bátiz"},
+  "sec tecnica 1": {query:"Escuela Secundaria Técnica Num. 1 Juan de Dios Bátiz, Avenida Adolfo Ruiz Cortines, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 1 Juan de Dios Bátiz"},
+  "secundaria tecnica 25": {query:"Escuela Secundaria Técnica Num. 25 Lázaro Cárdenas del Río, Calle Golondrinas, Xaltianguis, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 25 Lázaro Cárdenas del Río"},
+  "tecnica 25": {query:"Escuela Secundaria Técnica Num. 25 Lázaro Cárdenas del Río, Calle Golondrinas, Xaltianguis, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 25 Lázaro Cárdenas del Río"},
+  "secundaria tecnica 77": {query:"Renacimiento, Escuela Secundaria Técnica, Calle Alta Quebrada, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 77 Renacimiento"},
+  "tecnica 77": {query:"Renacimiento, Escuela Secundaria Técnica, Calle Alta Quebrada, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 77 Renacimiento"},
+  "secundaria tecnica 78": {lat:16.83336323, lon:-99.91519046, nombre:"Escuela Secundaria Técnica No. 78 Raúl Pous Ortiz"},
+  "tecnica 78": {lat:16.83336323, lon:-99.91519046, nombre:"Escuela Secundaria Técnica No. 78 Raúl Pous Ortiz"},
+  "sec tecnica 78": {lat:16.83336323, lon:-99.91519046, nombre:"Escuela Secundaria Técnica No. 78 Raúl Pous Ortiz"},
+  "raul pous ortiz": {lat:16.83336323, lon:-99.91519046, nombre:"Escuela Secundaria Técnica No. 78 Raúl Pous Ortiz"},
+  "secundaria tecnica 79": {query:"Sor Juana Inés de la Cruz, Escuela Secundaria Técnica, Avenida Campo de Tiro, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 79 Sor Juana Inés de la Cruz"},
+  "tecnica 79": {query:"Sor Juana Inés de la Cruz, Escuela Secundaria Técnica, Avenida Campo de Tiro, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 79 Sor Juana Inés de la Cruz"},
+  "secundaria tecnica 92": {query:"Escuela Secundaria Técnica Num. 92, Calle Monte Everest, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 92"},
+  "tecnica 92": {query:"Escuela Secundaria Técnica Num. 92, Calle Monte Everest, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 92"},
+  "secundaria tecnica 104": {query:"Escuela Secundaria Técnica Num. 104 Emiliano Zapata, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 104 Emiliano Zapata"},
+  "tecnica 104": {query:"Escuela Secundaria Técnica Num. 104 Emiliano Zapata, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 104 Emiliano Zapata"},
+  "secundaria tecnica 117": {query:"Escuela Secundaria Técnica Num. 117 Rafael Ramírez Castañeda, Avenida Ejército Libertadores, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 117 Rafael Ramírez Castañeda"},
+  "tecnica 117": {query:"Escuela Secundaria Técnica Num. 117 Rafael Ramírez Castañeda, Avenida Ejército Libertadores, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 117 Rafael Ramírez Castañeda"},
+  "secundaria tecnica 129": {query:"Escuela Secundaria Técnica Num. 129 Benito Juárez, Calle Benito Juárez, La Providencia, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 129 Benito Juárez"},
+  "tecnica 129": {query:"Escuela Secundaria Técnica Num. 129 Benito Juárez, Calle Benito Juárez, La Providencia, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 129 Benito Juárez"},
+  "secundaria tecnica 138": {query:"Escuela Secundaria Técnica Num. 138, Avenida Ricardo Flores Magón, San Isidro Gallinero, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 138"},
+  "tecnica 138": {query:"Escuela Secundaria Técnica Num. 138, Avenida Ricardo Flores Magón, San Isidro Gallinero, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 138"},
+  "secundaria tecnica 199": {query:"Escuela Secundaria Técnica Num. 199 Unidos por Guerrero, Calle Ciruelo, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 199 Unidos por Guerrero"},
+  "tecnica 199": {query:"Escuela Secundaria Técnica Num. 199 Unidos por Guerrero, Calle Ciruelo, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 199 Unidos por Guerrero"},
+  "secundaria tecnica 200": {query:"Escuela Secundaria Técnica Num. 200, Avenida Quinceava, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 200"},
+  "tecnica 200": {query:"Escuela Secundaria Técnica Num. 200, Avenida Quinceava, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 200"},
+  "secundaria tecnica 221": {query:"Escuela Secundaria Técnica Num. 221, Andador Papayos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 221"},
+  "tecnica 221": {query:"Escuela Secundaria Técnica Num. 221, Andador Papayos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 221"},
+  "secundaria tecnica 222": {query:"Escuela Secundaria Técnica Num. 222 Álvaro García López, Calle Francisco González Bocanegra 540, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 222 Álvaro García López"},
+  "tecnica 222": {query:"Escuela Secundaria Técnica Num. 222 Álvaro García López, Calle Francisco González Bocanegra 540, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 222 Álvaro García López"},
+  "secundaria tecnica 233": {query:"Escuela Secundaria Técnica Num. 233 Ignacio Manuel Altamirano, Calle Bugambilias, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 233 Ignacio Manuel Altamirano"},
+  "tecnica 233": {query:"Escuela Secundaria Técnica Num. 233 Ignacio Manuel Altamirano, Calle Bugambilias, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 233 Ignacio Manuel Altamirano"},
+
+  // Escuelas técnicas conocidas por nombre, sin número en el directorio.
+  "mario gonzalez navarro": {query:"Mario González Navarro, Escuela Secundaria Técnica, Avenida Tecnológico, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Mario González Navarro"},
+  "secundaria tecnica mario gonzalez navarro": {query:"Mario González Navarro, Escuela Secundaria Técnica, Avenida Tecnológico, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Mario González Navarro"},
+  "jose vasconcelos": {query:"José Vasconcelos, Escuela Secundaria Técnica, Avenida Morelos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica José Vasconcelos"},
+  "vicente guerrero secundaria tecnica": {query:"Vicente Guerrero, Escuela Secundaria Técnica, Calle Miguel Hidalgo, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Vicente Guerrero"},
+  "hermenegildo galeana secundaria tecnica": {query:"Hermenegildo Galeana, Escuela Secundaria Técnica, Calle Israel Nogueda Otero, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Hermenegildo Galeana"},
+  "acapulco diamante secundaria tecnica": {query:"Acapulco Diamante, Escuela Secundaria Técnica, Avenida Miramar, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Acapulco Diamante"},
+  "miguel hidalgo secundaria tecnica": {query:"Miguel Hidalgo y Costilla, Escuela Secundaria Técnica, Calle Silvestre Castro, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Miguel Hidalgo y Costilla"},
+  "ninos heroes secundaria tecnica": {query:"Niños Héroes de Chapultepec, Escuela Secundaria Técnica, Lomas de Chapultepec, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Niños Héroes de Chapultepec"},
+  "ignacio manuel altamirano secundaria tecnica": {query:"Ignacio Manuel Altamirano, Escuela Secundaria Técnica, Calle Bugambilias, San Pedro Las Playas, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Ignacio Manuel Altamirano"},
+  "coloso acapulco secundaria tecnica": {query:"Coloso Acapulco, Escuela Secundaria Técnica, Avenida Picacho, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Coloso Acapulco"},
+  "ejercito mexicano secundaria tecnica": {query:"Ejército Mexicano, Escuela Secundaria Técnica, Calle Mauro Jiménez Mora, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Ejército Mexicano"},
+  "secundaria tecnica victoria": {query:"Secundaria Técnica Victoria, Acapulco, Guerrero, México", nombre:"Secundaria Técnica Victoria"},
+
+
+  // Resto del catálogo de secundarias técnicas detectadas en el directorio de Acapulco.
+  "rosario castellanos secundaria tecnica": {query:"Rosario Castellanos, Escuela Secundaria Técnica, Dos Arroyos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Rosario Castellanos"},
+  "jose maria morelos secundaria tecnica": {query:"José María Morelos y Pavón, Escuela Secundaria Técnica, Tres Palos, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica José María Morelos y Pavón"},
+  "jesus h salgado secundaria tecnica": {query:"Jesús H. Salgado, Escuela Secundaria Técnica, Colonia Guerrero Los Guajes, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Jesús H. Salgado"},
+  "benito juarez garcia secundaria tecnica": {query:"Benito Juárez García, Escuela Secundaria Técnica, Alto del Camarón, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Benito Juárez García"},
+  "luis donaldo colosio secundaria tecnica": {query:"Luis Donaldo Colosio Murrieta, Escuela Secundaria Técnica, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Luis Donaldo Colosio Murrieta"},
+  "jesus garcia secundaria tecnica": {query:"Jesús García, Escuela Secundaria Técnica, Avenida Parque Nacional, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Jesús García"},
+  "jose azueta secundaria tecnica": {query:"José Azueta, Escuela Secundaria Técnica, Avenida de la Juventud, San Isidro Gallinero, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica José Azueta"},
+  "escuela secundaria tecnica 280": {query:"Escuela Secundaria Técnica, Avenida Ciclo Pista, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 280"},
+  "secundaria tecnica 280": {query:"Escuela Secundaria Técnica, Avenida Ciclo Pista, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica No. 280"},
+  "raul isidro burgos": {query:"Raúl Isidro Burgos, Escuela Secundaria Técnica, Los Órganos de Juan R. Escudero, Acapulco, Guerrero, México", nombre:"Escuela Secundaria Técnica Raúl Isidro Burgos"},
+  "secundaria tecnica victoria": {query:"Secundaria Técnica Victoria, Acapulco, Guerrero, México", nombre:"Secundaria Técnica Victoria"},
+
+  // Otros destinos con ambigüedad conocida.
+  "baby o": {query:"Baby'O, Avenida Costera Miguel Alemán 22, Costa Azul, Acapulco, Guerrero, México", nombre:"Baby'O Acapulco"},
+  "baby o acapulco": {query:"Baby'O, Avenida Costera Miguel Alemán 22, Costa Azul, Acapulco, Guerrero, México", nombre:"Baby'O Acapulco"},
+  "babyo": {query:"Baby'O, Avenida Costera Miguel Alemán 22, Costa Azul, Acapulco, Guerrero, México", nombre:"Baby'O Acapulco"},
+  "discotque babyo": {query:"Baby'O, Avenida Costera Miguel Alemán 22, Costa Azul, Acapulco, Guerrero, México", nombre:"Baby'O Acapulco"},
+  "discoteca babyo": {query:"Baby'O, Avenida Costera Miguel Alemán 22, Costa Azul, Acapulco, Guerrero, México", nombre:"Baby'O Acapulco"},
+  "club night chicas": {query:"Chicas Girls, Acapulco, Guerrero, México", nombre:"Chicas Girls"},
+  "club nigth chicas": {query:"Chicas Girls, Acapulco, Guerrero, México", nombre:"Chicas Girls"},
+  "chicas girls": {query:"Chicas Girls, Acapulco, Guerrero, México", nombre:"Chicas Girls"},
+  "club night bar 10": {query:"Bar 10, Acapulco, Guerrero, México", nombre:"Bar 10"},
+  "club nigth bar 10": {query:"Bar 10, Acapulco, Guerrero, México", nombre:"Bar 10"},
+  "club night tabu": {query:"Tabu, Acapulco, Guerrero, México", nombre:"Tabú"},
+  "club nigth tabu": {query:"Tabu, Acapulco, Guerrero, México", nombre:"Tabú"}
+
 };
 
 function normalizarTexto(t){
@@ -295,11 +412,49 @@ async function buscarNominatimCanonico(consulta, nombrePreferido){
         (x.address?.town || "") + " " +
         (x.address?.municipality || "") + " " +
         (x.address?.suburb || "") + " " +
-        (x.address?.neighbourhood || "")
+        (x.address?.neighbourhood || "") + " " +
+        (x.address?.village || "")
       )
     );
 
-    const mejor = candidatos[0] || resultados[0];
+    const base = (nombrePreferido || consulta || "")
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s]/g," ")
+      .split(/\s+/)
+      .filter(p => p.length >= 3 && !["acapulco","guerrero","mexico","calle","avenida","av","colonia","col","fracc","fraccionamiento","numero","num"].includes(p));
+
+    const puntuar = x => {
+      const texto = ((x.display_name || "") + " " + JSON.stringify(x.address || {}))
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s]/g," ");
+      let puntos = 0;
+      for(const token of base){
+        if(texto.includes(token)) puntos++;
+      }
+      // Penaliza resultados claramente de otra categoría cuando se pidió una institución.
+      if(/escuela|secundaria|colegio|hospital|terminal|walmart|restaurante|bar|parque|iglesia|museo/i.test(nombrePreferido || "")){
+        if(!/school|college|hospital|bus|restaurant|bar|park|place|amenity|building|office|stadium/i.test(x.type || "")){
+          puntos -= 1;
+        }
+      }
+      return puntos;
+    };
+
+    const ordenados = (candidatos.length ? candidatos : resultados)
+      .map(x => ({x, score:puntuar(x)}))
+      .sort((a,b)=>b.score-a.score);
+
+    const mejor = ordenados[0]?.x || resultados[0];
+    if(!mejor) return null;
+
+    // Para consultas canónicas institucionales exigimos coincidencia mínima;
+    // esto evita casos como "Colegio Madrid" -> "Miguel de la Madrid".
+    if(nombrePreferido && base.length >= 2 && puntuar(mejor) < 1){
+      return null;
+    }
+
     return {
       lat:Number(mejor.lat),
       lon:Number(mejor.lon),
@@ -663,11 +818,26 @@ Escribe la colonia o el cruce, por ejemplo: "Calle 5, Col. Bella Vista" o "Calle
   if(normalizado === "gasolinera" || normalizado === "chedraui" || normalizado === "walmart"){
     throw new Error("Destino ambiguo: especifica cuál. Por ejemplo: Walmart Icacos, Walmart Diamante o Walmart La Marina.");
   }
+  if(normalizado === "secundaria" || normalizado === "escuela secundaria" || normalizado === "secundaria tecnica" || normalizado === "secundaria técnica" || normalizado === "secundaria federal"){
+    throw new Error("Destino ambiguo: hay muchas secundarias en Acapulco. Especifica el número o nombre del plantel, por ejemplo: Secundaria Técnica 1, Técnica 78 o Federal 4.");
+  }
   if(normalizado === "bora bora" || normalizado === "bora-bora"){
     throw new Error("Destino ambiguo: Bora Bora puede ser la Calle Bora Bora, en Lomas de Magallanes, o el Restaurante Bora Bora, en Las Brisas Marqués. Especifica cuál.");
   }
   if(normalizado === "mariscos el plebe alegre" || normalizado === "el plebe alegre"){
     throw new Error("Destino ambiguo: hay varias ubicaciones de El Plebe Alegre. Especifica Condesa, Costa Azul o Granjas del Marqués.");
+  }
+  if(normalizado === "colegio madrid"){
+    throw new Error("Destino ambiguo: hay más de un Colegio Madrid en Acapulco. Especifica la colonia, zona o plantel.");
+  }
+  if(normalizado === "colegio español" || normalizado === "colegio espanol"){
+    throw new Error("Destino ambiguo: hay más de un Colegio Español en Acapulco. Especifica la colonia, zona o plantel.");
+  }
+  if(normalizado === "mariscos los buzos" || normalizado === "los buzos"){
+    throw new Error("Destino ambiguo: hay varias sucursales de Mariscos Los Buzos. Especifica la zona o sucursal.");
+  }
+  if(/^club\s+n(igh|ig)ht(?:\s+club)?$/i.test(normalizado) || normalizado === "club night" || normalizado === "club nigth"){
+    throw new Error("Destino ambiguo: 'club night' es una categoría de bares/clubes nocturnos. Escribe el nombre del lugar, por ejemplo: Baby'O, Chicas Girls, Bar 10 o Tabú.");
   }
 
   // ==============================
